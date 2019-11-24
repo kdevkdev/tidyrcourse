@@ -1,0 +1,150 @@
+\documentclass[titlepage]{book}
+\usepackage{bwstyle}
+
+\title{\huge \textbf{ R- a tool for statistical analysis }\vspace{+1cm}  }
+\subtitle{A modern introduction using tidyverse}
+\author{{\LARGE \emph{Brian Williams}}\vspace{+1cm} \\
+ Epidemiology and Global Health Unit,\\
+ Department of Public Health and Medicine,\\
+ Umeå University \vspace{+8cm}}
+ 
+
+\date{\today}
+
+\begin{document}
+
+<<setup,include=FALSE,cache=FALSE,echo=FALSE, warning = TRUE, message = FALSE >>=
+library(knitr)
+suppressPackageStartupMessages(library(tidyverse))
+library(tidyverse)
+opts_knit$set(self.contained=FALSE)
+evalChild  = TRUE
+warn = FALSE
+# set global chunk options
+#opts_chunk$set(fig.align='center', fig.show='hold', fig.height = 4.5, background='ivory' echo = TRUE)
+options(replace.assign=TRUE,width=90)
+Sys.setenv(TEXINPUTS=getwd(),
+           BIBINPUTS=getwd(),
+           BSTINPUTS=getwd())
+@
+
+\maketitle
+
+\frontmatter
+
+
+<<Prelim,child='./children/Preliminaries.rnw'>>=
+@
+
+<<Pref,child='./children/Preface.rnw'>>=
+@
+
+\cleardoublepage
+\phantomsection
+\addcontentsline{toc}{chapter}{Table of contents}
+\tableofcontents
+\cleardoublepage
+\mainmatter
+
+<<Lect1,child='./children/Lecture1.rnw', eval = TRUE, results = 'hide'>>=
+  @
+
+<<Tut1,child='./children/Tutorial1.Rnw', eval = TRUE>>=
+@
+
+<<Lect2,child='./children/Lecture2.rnw', eval = TRUE>>=
+@
+
+<<Tut2,child='./children/Tutorial2.rnw', eval = TRUE>>=
+@
+
+<<Lect3,child='./children/Lecture3.rnw', eval = TRUE>>=
+@
+
+<<Tut3,child='./children/Tutorial3.rnw', eval = TRUE>>=
+@
+
+
+<<Lect4,child='./children/Lecture4.rnw', eval = TRUE>>=
+@
+
+<<Tut4,child='./children/Tutorial4.rnw', eval = TRUE>>=
+@
+
+<<Lect5,child='./children/Lecture5.rnw', eval = TRUE>>=
+@
+
+<<Tut5,child='./children/Tutorial5.rnw', eval = TRUE>>=
+@
+
+<<Lect6,child='./children/Lecture6.rnw', eval = TRUE>>=
+@
+
+<<Tut6,child='./children/Tutorial6.rnw', eval = TRUE>>=
+@
+
+<<Lect7,child='./children/Lecture7.rnw', eval = TRUE>>=
+@
+
+
+<<Tut7,child='./children/Tutorial7.rnw', eval = TRUE>>=
+@
+
+<<Lect8,child='./children/Lecture8.rnw', eval = TRUE>>=
+@
+
+<<Tut8,child='./children/Tutorial8.rnw', eval = TRUE>>=
+@
+
+<<Lect9,child='./children/Lecture9.rnw', eval = TRUE>>=
+@
+
+
+<<Tut9,child='./children/Tutorial9.rnw', eval = TRUE>>=
+@
+
+
+<<Lect10,child='./children/Lecture10.rnw', eval = TRUE>>=
+@
+
+
+<<Tut10,child='./children/Tutorial10.rnw', eval = TRUE>>=
+@
+
+
+<<Lect11,child='./children/Lecture11.rnw', eval = TRUE>>=
+@
+
+
+<<Tut11,child='./children/Tutorial11.rnw', eval = TRUE>>=
+@
+
+
+<<Lect12,child='./children/Lecture12.rnw', eval = TRUE>>=
+@
+
+
+<<Tut12,child='./children/Tutorial12.rnw', eval = TRUE>>=
+@
+
+
+<<Lect13,child='./children/Lecture13.rnw', eval = TRUE>>=
+@
+
+<<Tut13,child='./children/Tutorial13.rnw', eval = TRUE>>=
+@
+
+<<App1,child='./children/Appendix.rnw', eval = TRUE>>=
+@
+
+
+
+\clearpage
+\phantomsection
+\addcontentsline{toc}{chapter}{Bibliography}
+
+\printbibliography
+
+\printindex
+
+\end{document}

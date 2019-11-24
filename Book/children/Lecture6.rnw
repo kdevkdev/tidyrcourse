@@ -1,0 +1,383 @@
+
+% ********  Template for children  ********
+
+% 1. Save as appropriate chapterName (Lecture7, Tutorial10 etc)
+% 2. Change title to above
+% 3. Change opening chunk name (Temp0) to chapter title
+% 4. Remove/replace chunk Temp1
+
+% All chunk names to be preceded by Tn or Ln  (where n is chapter or tutorial number)
+
+
+<<Lecture6, include=FALSE>>= 
+library(knitr)
+library(tidyverse)
+set_parent("../tidyRcourseBook.rnw")
+warn <- FALSE
+EVAL <- FALSE
+@
+
+
+
+\chapter{Lecture 6 - More ggplot2, facets, time series}\label{Lecture6}
+
+
+\author{Brian Williams $<$\href{mailto:bjw649@gmail.com}%
+{bjw649@gmail.com}$>$}
+
+
+\section{Summary}
+This session extends the explanations of the use of the ggplot2 package for graphical presentation of data facets.
+
+\section{Logistics}
+Go to the Code folder and open the courseCode.R file.  Find "Lecture6.R".
+Set the working directory to that of the source file.  Take notes in your RMarkdown file (Due for submission on Wednesday!)
+
+It is also a good time to \textbf{install} the \texttt{WDI} package\index{Package!WDI} and also \textbf{install} the package \texttt{gridExtra}\index{Package!gridExtra}.
+
+
+<<L6Preliminaries1, warning = warn>>=
+bP<- read_csv(file="../Data/BackPain.csv", na = c(""," ","NA"), col_types = cols())  %>%
+ drop_na()
+@
+
+ 
+\section{Introduction}
+
+We have seen in Section~\ref{widetolong}  that \texttt{tidyr} has a neat function for converting so called 'wide' forms of data frames (like the back pain data we have been looking at) into 'long' form. This will lead us nicely into \texttt{ggplot2}, which likes (but does not require) long form!
+
+In this session we will have a look at ggplot's impressive capacity to do multi-variable conditioned plots called 'facets'.  We shall see that these plots provide very good capacity to look at data in multi-conditioned groups.
+
+Before we begin, however, let's see how to easily put two or more plots together on the page.
+
+\section{Multiple ggplots in a window}\index{ggplot2!Multiple ggplots}
+
+Sometimes you may want to put different types of \texttt{ggplot}'s in separate panels in a single window.  It seems to be a bit less common in ggplot, because of the capacity to do over-plotting and facet plotting which we'll see below. 
+
+The procedure is straightforward but you firstly need to have installed the package \texttt{gridExtra}\index{Packages!gridExtra}.
+
+
+<<L6Multiplot2, eval = EVAL >>=
+library(gridExtra)
+
+p1 <- ggplot(data = bP, aes(x = bmi, fill = sex))
+binsize <- diff(range(bP$bmi))/60
+p1 <- p1 + geom_histogram(binwidth = binsize,
+                        position = 'identity',
+                        colour   = 'brown',
+                        alpha    = 0.5)
+
+p2 <- ggplot(data = bP, aes(x = sex, y = bmi))
+p2 <- p2 + geom_boxplot(fill = 'red')
+
+grid.arrange(p1,p2,ncol = 2)
+
+@
+
+
+
+\section{Using facets in ggplot}\index{ggplot!facets}
+
+Facets are a useful way of presenting multiple correlated factors (without the total confusion arising by putting all the information on a single plot.)
+
+Let's plot some histograms of the numbers for sex and age group of the respondents for all the SAGE countries.
+
+<<L6FacetedHistogramsByCountry, eval = EVAL >>=
+pp1 <- ggplot(bP, aes(x=bmi, fill=agegr)) +
+  geom_histogram(binwidth = 1.) +
+  facet_grid(country ~ sex,scales="free_y")
+pp1
+@
+Note the 'free' y-axis. Its not obvious at first glance that China has much more data than South Africa.  An annotation on the plot of the total numbers would draw immediate attention to this. 
+
+ We took a look at that in the last Tutorial.
+
+ Many of Ghana's \texttt{NA}'s are in the height variable so let's use \texttt{complete.cases()}\index{Core functions!complete.cases()} to clear the rows which have \texttt{NA}'s in the data we are looking at - but not remove them if there are NA's in other variables in those rows.
+
+<<L6complCases,warning=warn, eval = EVAL >>=
+load("../Data/BackPain.Rdata")
+bP%>%group_by(country)%>%
+  tally()
+bP <- filter(bP, complete.cases(
+                 residence, disability, sex, age, country, bmi4)) 
+
+bP%>%group_by(country)%>%
+  tally()
+@
+
+Now  try the facet plot again
+
+<<L6bFacetedHistogramsByCountry, eval = EVAL >>=
+pp1 <- ggplot(bP, aes(x=bmi, fill=agegr)) +
+  geom_histogram(binwidth = 1.) +
+  facet_grid(country ~ sex,scales="free_y")
+pp1
+@
+
+Here is another more complicated example, looking at the data for disability vs age.
+
+<<L6complCasesA,warning=warn, eval = EVAL >>=
+p <- ggplot(bP, aes(x = age,  y = disability, color = residence, shape = sex))
+p <- p + geom_point()  + stat_smooth(method = lm, se = FALSE)
+p <- p + facet_grid(country~bmi4)
+p
+@
+ Notice that Russia and Mexico still have limited data in the Underweight category - and perhaps we should abbreviate the Russian Federation's name even more! Trend lines are consistent everywhere except the very small dataset for underweight Mexicans and Russians.
+
+Note that we've specified that we don't want the standard error plotted. In this case it's so wide that the scales of the plot are reduced to accommodate it and we lose too much resolution!
+
+We do not have a lot of underweight Russians and Mexicans - how many? There are many ways to compute these numbers -  the chunks below is one - can you think of another (better?) one?
+
+<<L6subs9.1, warning=warn, eval = EVAL >>=
+bbR <- bP %>%
+  filter(country == "Russian Fedn." ) %>%
+  count(bmi4) %>% 
+ rename( nRussia = n)     #Missing code (incuding preceding %>%)
+bbR
+@
+
+<<L6Mexnumbers, eval = EVAL >>=
+bbM <- bP %>%
+  filter( country == "Mexico")  %>%
+  count(bmi4)%>%
+  rename(nMexico = n)    #Missing code (incuding preceding %>%)
+bbM
+bbb <- left_join(bbR,bbM)  #default key!!
+bbb
+@
+
+
+In the tutorial, try  out the facet plot for yourselves, using something like: \texttt{x = bmi, y = disability, color = sex, shape = smoke} in a facet\_grid country $\sim$ wealthQ. Copy and paste from above to begin with - then you'll have to use the \texttt{complete.cases()} function to pick up the \texttt{NA}'s in the newly selected variables.
+
+\subsection{ Using long form with facets}
+In Section~\ref{widetolong} we saw that we could arrange our data in 'long' form using the \texttt{tidyr} package\index{Package!tidyr}, \texttt{gather}\index{tidyr::gather}, and that \texttt{ggplot} could then be easily used to produce a group of box-plots, three for each country. The code to gather our tidied up data frame and plot box-plots with \texttt{ggplot} is given in the chunk below.
+<<L6gather9.2,warning=warn, eval = EVAL >>=
+# Now gather the reduced version of bP on 3 measured variables
+library(tidyr)
+bPg <- gather(bP, variable, value = value, age, disability, bmi)
+dim(bPg)     # We're expecting 3* bP's rows
+str(bPg)     # Much better
+
+levels(bPg$variable)
+
+p <- ggplot(na.omit(bPg), aes(x = country, y = value, colour=variable))
+p + geom_boxplot()
+
+@
+
+This chunk also demonstrates how to adjust the range on the y-axis.
+<<L6boxes,warning=warn, eval = EVAL >>=
+p <- p + geom_boxplot() + ylim(0,90)
+p
+p <- p + facet_grid(residence~sex)
+p
+@
+These plots contain too much information for the average viewer, but are presented to show the kind of plots which can be constructed with minimal effort, using ggplot.
+
+\section{Time series using gather}
+An important application of \texttt{gather} in \texttt{ggplot} is in multivariate time-series plots.
+Since our standard BackPain data is cross-sectional, we will need to find another data-set to demonstrate how \texttt{gather} and \texttt{ggplot} work together to produce these multivariate plots. Let's have a look at getting some of the World Bank Data on World Development Indicators.
+
+\subsection{Getting World Development Indicators (World Bank)}
+
+Take a quick look at the description file of the WDI package and you will see that its latest data is April, 2018.
+
+The World Bank's indicators \href{https://datahelpdesk.worldbank.org/knowledgebase/articles/201175-how-does-the-world-bank-code-its-indicators}{help page} has descriptions of how the codes are derived and a \href{http://databank.worldbank.org/data/download/site-content/WDI\_CETS.xls}{link} to a spreadsheet listing the available time series and their codes. This spreadsheet (WDI\_CETS.xls) is in the Resources folder. Have a look at it. In the spreadsheet, you can look up (for example) \emph{Gross national income per capita in current International dollars} and you will see that the WDI code for this item is 'NY.GNP.PCAP.PP.CD'.
+
+Let's also have a look at  mobile phone ownership. How do these data relate to public health? \emph{Mobile cellular subscriptions (per 100 people)} has the code 'IT.CEL.SETS.P2'.
+
+\emph{'Health expenditure, total (\% of GDP)}' is indicated by 'SH.XPD.TOTL.ZS'.
+
+The code chunk below shows how to  download these three items. Have a look at the help documents for definitive information about the arguments of the function \texttt{WDI()}\index{World Development Indicators (WDI)}.
+
+Let's begin by taking a look at the 'indicators'.
+
+<<L6WDI1,warning=warn, eval = EVAL >>=
+library(WDI)
+WDIsearch(string='gnp', field='indicator', cache=NULL)
+@
+
+These indicators are used to identify the data you are seeking to access.
+
+
+<<L6WDI1a,warning=warn, eval = EVAL >>=
+WDIsearch(string='mobile', field='name', cache=NULL)
+@
+Item 24 in this list shows us that the indicator "NY.GNP.PCAP.PP.CD" is the code for access to  "GNI per capita, PPP (current international \$)" .
+
+
+<<L6WDI11b,warning=warn, eval = EVAL >>=
+
+SAGE_PPP <- WDI(country = c("CN", "GH", "IN", "MX", "RU", "ZA") ,
+                indicator = 'NY.GNP.PCAP.PP.CD',
+    start = 1985, end = 2017, extra = FALSE, cache = NULL)   #GNP
+otherC <- c("AU", "DE","IR", "SE", "VN" )
+SAGE_MPH <-  WDI(country = c("CN", "GH", "IN", "MX", "RU", "ZA") ,
+                 indicator = 'IT.CEL.SETS.P2',
+    start = 1985, end = 2017, extra = FALSE, cache = NULL)      #Mob Phones
+SAGE_HPG <-  WDI(country = c("CN", "GH", "IN", "MX", "RU", "ZA") ,
+                 indicator = 'SH.XPD.CHEX.PP.CD',         # Code not in WDI_CETS.xls !?
+    start = 1985, end = 2017, extra = FALSE, cache = NULL)
+str(SAGE_PPP)
+head(SAGE_PPP,40)
+names(SAGE_PPP)[3] <- "PPP"
+names(SAGE_MPH)[3] <- "MPH"
+names(SAGE_HPG)[3] <- "HPG"
+SAGE_HPG <- SAGE_HPG %>% mutate(HPG = HPG * 10.)  # NB (Easier to see in the plot)  !!!!!!
+sum(is.na(SAGE_MPH))
+sum(is.na(SAGE_HPG))
+
+@
+
+
+\subsection{Joining the data}
+Now we need to join the three data frames into a single data frame.  This will happen fairly painlessly, since we chose the same number of years of data and the same number of countries in each of the three downloads. The function \texttt{left\_join}\index{dplyr::left\_join} will join all columns with the same names (in our case, year, iso2c and country) and add the new columns. We repeat the process with the third data frame, joining it with the result of the first join.
+
+<<L6merge_ts9_2,warning=warn, eval = EVAL >>=
+df <- left_join(SAGE_PPP, SAGE_MPH, sort = FALSE)
+df <- left_join(df, SAGE_HPG, sort = FALSE)
+df$country <- factor(df$country)
+#!!!!!! Abbreviating RF and SA improves the plot a little 
+df <- df %>% mutate(country = factor(country, labels = c('China', 'Ghana',
+                              'India', 'Mexico', 'Russian Fed.', 'Sth Africa')))
+head(df)
+head(SAGE_PPP)
+head(SAGE_MPH)
+head(SAGE_HPG)
+
+#--------------------------------------------------------------------------------
+
+
+jj <- 0
+dd <- rep(0,6)      # create a 6 element vector, each element is 0
+
+# Normalize per capita income for plotting (divide each year's per capita income
+#      data by the max of the country's per capita income data)
+
+for (i in levels(df$country)){        # loop through the levels of country
+  jj <- jj + 1                        # jj will take values 1-6 as we cycle through the loop
+  dd[jj] <- max(df$PPP[df$country == i], na.rm=T)   # Find the maximum PPP for country i
+                                                    # Store in vector dd
+  df$PPP[df$country == i] <- df$PPP[df$country==i]/dd[jj]*100. # divide PPP for country i                                                            # by the max PPP for country i
+}
+df <- select(df, -iso2c)    # Cleaning up - don't need this
+@
+At this stage you should do a quick check to ensure that things have worked out the way you want. It can be a little bit tricky if the data are reordered in the merging process, so we specified \texttt{sort = FALSE}, so that would not happen. (Try it yourself with the default [\texttt{TRUE}] setting for sort. Then look at the head of each of the data frames).  We've normalized the per capita incomes so that we'll have better scales for our plots of the three variables.
+
+\subsection{Gathering the data frame}
+Now we're ready to gather the data frames and produce some interesting results.\index{tidyr::gather}
+<<L6plot_TS,warning=warn, eval = EVAL >>=
+tsg <- gather(df, variable, value, PPP, MPH, HPG)      # !!!!!!!!Note removal of -ve's
+
+head(tsg,50)
+@
+\subsubsection{Notes}
+\begin{itemize}
+\item{Here we have gathered so that year and country are held constant as we put the three measured variables, "PPP","MPH" and "HPG" on separate rows of the long form data frame. No names have been specified for the long form so we  have a new factor variable called 'variable', with levels "PPP","MPH"and "HPG" and their values  appear in the new numeric variable called 'value'.}
+\end{itemize}
+
+\subsection{Construct a new data frame for the annotation in each facet}
+<<L6textdf,warning=warn, eval = EVAL >>=
+tdf <- data.frame( country = levels(df$country),                           #1.
+                   x1 = rep(2000, 6),
+                   y1 = rep(Inf, 6),                                       #2.
+                   text1 = paste("PPP (max) Normalized to 100 = ", as.character(dd)))
+tdf$text1 <- as.character(tdf$text1)                                         #3.
+tdf
+@
+\subsubsection{Notes}
+\begin{enumerate}
+\item{In order to place separate (different) text in each of the facets, we need to set up an extra data frame containing: the level(s) of the factor(s) in each of the facets. This will identify the facet for insertion of the text. If two factors (factor1, factor2) are used then this data frame will have factor1*factor2 rows and the first column will have the levels of factor1 repeated length(factor2) times [(rep(levels(factor1),length(factor2)))] and the second column will have the levels of factor2 repeated in the rows of each of the blocks in the column of the factor1 levels [rep(levels(factor2), each = length(factor(1))].
+
+Our example above simply requires a column with the levels of our single factor (country). The next two columns will be the the (x,y) locations of the texts in the  coordinates of (factor1, factor2) (i.e. corresponding to the factor1, factor2 facet).  The last column is the text to go into each of the facets.}
+\item{Inf sets the y coordinate to the upper limit of the y-axis.}
+\item{ Make sure this hasn't been coerced to a factor!}
+
+\end{enumerate}
+
+\subsection{Facet plot with individual annotations}\index{ggplot !annotating facets}
+Annotating individual facets is a little bit tricky, as you saw above, but once the text data frame is set up the rest is reasonably straight-forward.
+
+<<L6plotTS2,warning=warn, eval = EVAL >>=
+p <- ggplot(data = tsg,
+            aes(x = year, y = value, colour = variable))                   #1.
+p <- p + geom_line() + facet_grid(country ~ ., scale = "free_y")           #2.
+p + geom_text(data = tdf, aes(x = x1, y = Inf, label = text1),             #3.
+               vjust=2, inherit.aes = FALSE)
+
+@
+\subsubsection{Notes}
+\begin{enumerate}
+
+\item{Here's the set up of the ggplot object - we'll get a plot of the variables (PPP, MPH and PVT) in different colours.}
+\item{The plot will be different coloured lines for each of the three variables and there will be a single column of 6 facets, one for each country and the 'y' scale in each will be free to find its own values.}
+\item{ ...and finally the annotation using our extra data frame.  In order to assume there is no confusion with our earlier aesthetics, we set \texttt{inherit.aes = FALSE}. The parameter \texttt{vjust = 2} brings the text down from the upper limit of the y axis. I can't find any documentation on vjust > 1 on the web, but this works nicely! \href{http://zevross.com/blog/2014/08/04/beautiful-plotting-in-r-a-ggplot2-cheatsheet-3/}{Here} is a nice 'cheat-sheet' for making little adjustments to tidy up plots - it includes values of vjust > 1.  }
+
+\end{enumerate}
+
+\section{Annotating faceted scatter plots with best fit equation}
+
+This example takes our last annotation example a couple of steps further.  We will see that we have a two column array of facets, that the assembly of the supplementary data frame is handled by \texttt{ddply} and a separate function has been created for dealing with the presentation of the lines of best fit. The code you see here is a modification of that used in Winston Chang's book (which does not work for facet plots). I think my code is mostly from \href{http://stackoverflow.com/questions/19699858/ggplot-adding-regression-line-equation-and-r2-with-facet}{this} example on stackoverflow.com.
+
+We'll also show how to send the plot directly to a file.
+
+We don't have time to talk in detail about the presentation of mathematical formulae using \texttt{ggplot}, but as you might by now expect, the tools are all there. For the most part ggplot, in its text geoms, uses formats from base R's \texttt{plotmath} with the option \texttt{parse = TRUE}. Try \texttt{?plotmath} and \texttt{demo(plotmath)}.
+<<L6Anno9_1,warning=warn, eval = EVAL >>=
+lm_eqn = function(bb){
+  m = lm(wHR ~ bmi, bb);# Note: the function here has not been generalised
+                           # with arguments for different variable names
+  eq <- substitute(italic(y) == a + b %.% italic(x)*","~~italic(r)^2~"="~r2,
+                   list(a = format(coef(m)[1], digits = 2),
+                        b = format(coef(m)[2], digits = 2),
+                        r2 = format(summary(m)$r.squared, digits = 3)))
+  as.character(as.expression(eq));
+}
+
+@
+
+In the next chunk, we begin by grabbing plyr from the library and then setting our graphical output to be saved in .png format\index{Core functions!png()} in a file called \texttt{"plot9.png"}. We set the width and height in mm and the resolution in the computer  standard graphics unit, dots per inch. Similar functions are available for .bmp, .jpeg, and .tiff devices. Note that at the conclusion of the printing of our graphic we must specify \texttt{dev.off()}\index{Core functions!dev.off()} in order to close the file and return subsequent graphic output to the screen.
+<<L6Anno9_2,warning=warn, eval = EVAL >>=
+library(plyr)
+png("plot8.png", width = 2480, height = 1240, res = 120)
+pp4 <- ggplot(bP)
+pp4 <- pp4 + aes(x = bmi, y = wHR, shape = residence, colour = agegr, group = 1)
+pp4 <- pp4 + geom_point()
+pp4 <- pp4 + stat_smooth(method = lm,level = 0.99) # assumes formula = y ~ x
+pp4 <- pp4 + facet_grid(country ~ sex)
+pp4 <- pp4 + labs(title = "Compare bmi vs waistHtRaio")
+pp4 <- pp4 + ylab("waistHtRatio*100")
+pp4 <- pp4 + xlab("BMI")
+eqnDF <- ddply(.data = bP, .(country,sex), lm_eqn)                              #1.
+pp4 <- pp4 + geom_text(data = eqnDF,aes(x = 40,y = 180,label = V1),
+                       parse = TRUE,inherit.aes = FALSE)
+print(pp4)
+dev.off()
+@
+This \texttt{ddply} command constructs a data frame consisting of all the combinations of the levels of \texttt{country} and \texttt{sex} and passes the corresponding subset of \texttt{bb} to the function \texttt{lm\_eqn}, where a best fit line is constructed and a character string of the equation of the best fit line is added to that row of the new data frame. When the combinations of the levels in each row have been passed to \texttt{lm\_eqn} and the text string added to the data frame, the latter is assigned to \texttt{eqnDF}.
+
+A further search on  leads to an \href{http://stackoverflow.com/questions/7549694/ggplot2-adding-regression-line-equation-and-r2-on-graph}{easier way} to do this, but firstly requires that you install the package \texttt{ggpmisc}.
+
+
+<<L6AnnotateFacetLBF, eval = EVAL >>=
+library(ggpmisc)
+png("plot8.png", width = 2480, height = 1240, res = 120)
+my.formula <- y ~ x
+p <- ggplot(data = bP, aes(x = bmi, y = wHR, shape = residence, colour = agegr, group = 1)) +
+  geom_smooth(method = "lm", se=FALSE) + ylim(0,1.5) +
+  stat_poly_eq(formula = my.formula, 
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~",x=30, y=1.4), y=1.4), 
+               parse = TRUE) +         
+  geom_point()+ facet_grid(country~sex)
+p
+dev.off()
+@
+
+... and a bit more information \href{https://stackoverflow.com/questions/19699858/ggplot-adding-regression-line-equation-and-r2-with-facet}{here}.
+
+
+At first glance the fits are good, but look at the $r^2$ values and then remind yourself of the locations of the most dense part of the data set and then think about how well defined the slopes are in those dense regions.  Even though the high bmi readings support the slopes, there is so little data there (comparatively), its impact on the $r^2$ is small.
+
+The package \texttt{ggpmisc} is well worth looking at if you are trying to do complex things with \texttt{ggplot} - in addition to this help with equation annotation, it can annotate peaks and troughs in your data, deal with time series, annotate plots with tables such as ANOVA etc.
+
+
+%\printindex

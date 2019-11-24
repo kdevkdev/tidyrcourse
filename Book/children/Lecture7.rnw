@@ -1,0 +1,271 @@
+
+% ********  Template for children  ********
+
+% 1. Save as appropriate chapterName (Lecture7, Tutorial10 etc)
+% 2. Change title to above
+% 3. Change opening chunk name (Temp0) to chapter title
+% 4. Remove/replace chunk Temp1
+
+% All chunk names to be preceded by Tn or Ln  (where n is chapter or tutorial number
+
+<<Lecture7, include=FALSE>>=
+library(knitr)
+library(tidyverse)
+set_parent("../tidyRcourseBook.rnw")
+warn <-  FALSE
+EVAL <- FALSE
+@
+
+
+\chapter{Lecture 7 -  Elementary statistics and Regression}\index{Regression}
+
+\author{Brian Williams $<$\href{mailto:bjw649@gmail.com}%
+{bjw649@gmail.com}$>$}
+
+
+\section{Preliminaries}
+Install the \texttt{car} package\index{Package!car}. This is a very useful package written by John Fox. The name is from the title of his book "An R companion to applied regression".  Although the code does not use \texttt{tidyverse}, I think it's a good book for people to use to learn how to use R for regression analysis (but I'm not a statistician!).
+
+Load bP if you've not done so already, and go to the courseCode folder and open the Lecture7.R file.  Save it in your myRcode folder and set the working directory to that of the source file.
+
+<<L7load1, eval = EVAL >>=
+# Initial read of back pain data set 
+load("../Data/Backpain.Rdata")
+@
+
+
+\section{Objective} 
+To undertake some basic data maniplation and statistical analysis and prepare a report on this work using RMarkdown.  
+
+BE WARNED: This data set will not produce neat regressions of the kind you will see in most textbooks, unless we choose directly related data like bmi and waistHeightRatio.
+
+\section{Submission}
+
+There are no submission requirements for this class, but the document prepared here and in Tutorial 7 will form the basis of a document for submission in Tutorial 8. It is essential that you create and develop an RMarkdown document in this class and this afternoon's tutorial to take to tomorrow's sessions. Begin a new R Markdown document with title "R Homework 2" and make sure your name is correct. Save the document as your\_name\_H2.rmd.
+
+\section{Introduction}
+
+R is known for its many statistical packages and some have been tried and tested for many years.  The core statistical modeling is described in detail in \href{https://cran.r-project.org/doc/manuals/r-release/R-intro.pdf}{R-Intro.pdf}, Chapter 11, "Statistical models in R".  This Lecture provides a brief introduction to this core modeling.
+There's also documentation for lm \href{http://stat.ethz.ch/R-manual/R-devel/library/stats/html/lm.html}{here}. You need to have a good look at this if you want to do anything that is at all unusual. (Google is still your best friend for examples etc).
+
+We'll begin by taking a look at a few basic statistics using the base functions from R. Firstly a correlation matrix between two numeric (continuous) variables:
+
+\section{Correlation matrix and tests of numeric variables}\index{Core function!cor()}
+
+\subsection{Normality of numeric data}\index(ggplot::qq\_geom)
+
+It's easy to visualize normality of data with ggplot.  You can plot histograms, as we have done before or you can do a qqplot.
+
+<<L7normalityVariables, warning=warn , fig.height=4.5, eval = EVAL >>=
+p <- ggplot(bP, aes(sample=age)) +
+ stat_qq() + stat_qq_line()
+p
+@
+
+Age is of course, not normally distributed.  We can also use a couple of core functions to compute statistical indicators of normality and comparisons of distributions. These do the classical Kolmogorov-Smirnov (\texttt{ks.test()}) and Shapiro-Wilks (\texttt{shapiro.test()}) tests.
+
+Here's the function \texttt{shapiro.test()} applied to a sliced section of the data (It doesn't work if n > 3000):
+
+<<L7SHapiroTest, warning=warn , eval = EVAL >>=
+shapiro.test(bP$bmi[1:2500])
+@
+
+\subsection{Correlation of numeric data} \index{stats::cor()}
+
+The base function is called \texttt{cor()} and is simply called with the required vectors or dataframe. You can choose the method between "pearson" (default), "kendall" or "spearman" .
+
+<<L7Cor1, warning=warn , eval = EVAL >>=
+bP %>% select(bmi, waistc) %>% 
+  cor(use = "complete.obs")   #removes NA's where necessary
+@
+
+This is easily extended to more variables:
+
+<<L7Cor2, warning=warn , eval = EVAL >>=
+bP %>% select(bmi, waistc, age) %>%
+  cor(use = "complete.obs")   #removes NA's where necessary
+@
+
+...and if you are enthusiastic, you can look at all the numerics:
+
+
+<<L7Cor3, warning=warn , eval = EVAL >>=
+bP %>% select_if(is.numeric) %>% cor(use = "complete.obs")   #removes NA's where necessary
+@
+
+
+<<L7Cor4, warning=warn , eval = EVAL >>=
+bP %>% select(bmi, age, disability) %>%
+  cor(use = "complete.obs")   #removes NA's where necessary
+@
+
+We might also be interested in the correlation test statistics.  These are determined by the \texttt{stats::cor.test()}
+function.  \texttt{stats::cor.test()} requires specification of two vectors, and a dataframe cannot be specified, so...
+
+<<L7corTest1, warning=warn, eval = EVAL >>=
+  cor.test(bP$age, bP$disability, use = "complete.obs") 
+@
+
+
+There's only a weak correlation between age and disability (as defined in the survey and by WHO's algorithm). It's a little difficult to show on a plot because the data has a discrete structure.  Jitter and alpha help a little but there are still clearly evident bands in the age data.
+
+<<L7ChiSQ2, warning=warn,  fig.height=5, eval = EVAL >>=
+ALPHA <- 0.1
+TITLE <- paste("Jittered plot of disability vs age with alpha = ", as.character(ALPHA)) 
+bP %>% 
+  select(age, disability) %>%
+  ggplot(aes(x=age, y = disability)) + 
+  geom_jitter(alpha = ALPHA) + 
+  xlim(50, 100) + 
+  geom_smooth(method = "lm", se = FALSE) +
+  ggtitle(TITLE)
+@
+
+\section{Contingency tables and $\chi^2$ test} 
+
+\subsection{Tables}
+
+We have already seen some tabulation using the tabyl function - here's a little more before we look at the function \texttt{chisq.test()}.
+
+<<L7Tabyls2way, warning=warn, eval = EVAL >>=
+library(janitor)
+bP %>% 
+    tabyl(agegr, comorb) %>% 
+    adorn_title()
+
+@
+(Note that the use of \texttt(adorn\_title())) adds the title of the column variables, but the output is no longer a simple dataframe.)
+
+
+<<L7Tabyls2wayPct1, warning=warn, eval = EVAL >>=
+    bP %>% 
+    tabyl(country, agegr) %>% 
+    adorn_percentages("row") %>% 
+    adorn_pct_formatting(digits = 1, affix_sign = FALSE ) %>% 
+    adorn_title()
+@
+
+Three-way cross-tabulation is also sometimes of interest - it can be done with \texttt{tabyl()}:
+
+<<L7ThreeWayXtab, warning=warn, eval = EVAL >>=
+tabyl(bP, sex, backPain30, agegr) %>% 
+  adorn_title()
+@
+... and  remove the NA's first:
+
+<<L7ThreeWayXtabPC, warning=warn, eval = EVAL >>=
+bP %>% 
+  filter(complete.cases(sex, backPain30, agegr)) %>% 
+  tabyl( sex, backPain30, agegr) %>% 
+  adorn_title() 
+@
+
+\subsection{$\chi^2$ tests} \index{base::chisq.test()}
+
+Chi-squared tests are most easily undertaken using the function \texttt{base::chisq.test()}.  The implementation is not 'tidy', but it's not difficult anyway.
+
+<<L7ChiSQ1, warning=warn, eval = EVAL >>=
+ch_age_edu <- chisq.test(bP$agegr, bP$eduS)
+ch_age_edu
+@
+The results indicate a strong association - perhaps we should take a closer look at the test statistics and data?
+
+Let's take a look at the object created by \texttt{base::chisq.test()}.  We'll check its class and its structure, and then figure out how we might extract individual statistics from the output:
+
+<<L7ChiSQ1a, warning=warn, eval = EVAL >>=
+class(ch_age_edu)
+str(ch_age_edu)
+@
+The first thing we see is that the output is an object of type \texttt{htest}.
+
+The output from the \texttt{str()} function indicates that the \texttt{htest} object is a \texttt{list} with 9 items. (Many functions have \texttt{list} outputs). The dataframes we have been working with are a special form of a list - each variable is a list item of equal length and is accessed with the '\$' symbol. You can see the \texttt{str()} function reports the objects contents in summary form with a '\$' symbol in front of each item - so it is accessed like we accessed variables in data frames.
+
+For example, we can get each of the 'observed', 'expected' and 'residuals' values by naming them as follows:
+
+<<L7ChiSQ1bb, warning=warn, eval = EVAL >>=
+ch_age_edu$observed
+ch_age_edu$expected
+ch_age_edu$residuals
+@
+...and, of course we can tabulate percentages as we did earlier.
+
+<<L7ChiSQ1c, warning=warn, eval = EVAL >>=
+  bP %>% 
+  filter(complete.cases(agegr, eduS)) %>% 
+  tabyl(agegr, eduS) %>% 
+  adorn_totals("row") %>%
+  adorn_percentages() %>% 
+  adorn_pct_formatting(digits = 1, affix_sign = FALSE) %>% 
+  adorn_title()
+
+@
+Well, that is impressive!  The educational levels in these countries have improved strongly in the younger age groups.
+
+\section{Facet plots}
+Facet plots also provide a useful visualization of the data:
+
+<<L7facet1, warning=warn, fig.height=5 , eval = EVAL >>=
+ggplot(bP, aes(x= age, y = disability, colour = sex)) +
+  geom_point() +
+  facet_wrap(~country, nrow = 2)
+@
+
+
+\section{Linear Regression}\index{Linear regression} \index{stats::lm()}
+
+In base R, linear regression is undertaken with the core function \texttt{stats::lm()}\index{Core functions!lm()}. The model is described using a \textsl{formula}, beginning with a specification of the dependent variable, followed by '$\sim$' and then the independent variables. In the examples below, the independent variables are all listed with a '+' sign. There are many options for the definition of the formula, allowing for example, easy implementation of forward or backward step-wise multiple regression.  There is documentation on the web, but I have also included a nice summary called \textsl{formulaNotation.pdf} in the Resources folder.
+
+<<L7LM1, warning=warn , eval = EVAL >>=
+RegModel.1 <- lm(disability~age+bmi, data=bP)
+RegModel.1
+@
+
+The function \texttt{lm()} simply returns an \texttt{lm} object.  To see more detail of the results of the computation you can use the  \texttt{summary()} function (which knows how to deal with an argument which is an \texttt{lm} object). 
+
+<<L7LM1summary, warning = warn, eval = EVAL >>=
+summary(RegModel.1, warning = warn)
+@
+
+We'll see in the next section that the function \texttt{stats::anova()} also knows how to deal with an argument which is an \texttt{lm} object.
+
+<<L7LM2, warning=warn  , eval = EVAL >>=
+LinearModel.2 <- lm(disability ~ age + bmi + eduS + physical + residence + 
+  wealthQ + comorb + country, data = bP)
+summary(LinearModel.2)
+@
+
+\subsection{Linear Model Options}
+
+.... and here's one with a subset expression.
+
+<<L7LM3, warning=warn  , eval = EVAL >>=
+LinearModel.3 <- lm(disability ~ age + bmi + eduS + physical + residence + 
+  wealthQ + comorb + country, data=bP, subset = sex == "Male")
+summary(LinearModel.3)
+@
+
+
+\section{Generalized Linear Models}\index{Generalized linear models}
+The \texttt{glm()} function is a very powerful function with many useful arguments. If GLM is your analysis, you will need to have a good look at the documentation.  \texttt{?glm}. I note that the first example on the help page is from the classic text book (\cite{Dobson2018}) by my former colleague, Annette Dobson. (There is R code available for all the examples in the latest (4th) edition of that book.)
+
+<<L7glm6, warning = warn, eval = EVAL >>=
+GLM.6 <- glm(disability ~ age + backPain30 + sex, family = gaussian(identity),
+   data = bP)
+summary(GLM.6)
+@
+
+...and logistic regression:
+
+The GLM gives us the logistic regression option. This is expressed as the binomial distribution with a log odds link.\index{Core functions!glm()}\index{Core functions!summary()}
+
+
+<< L7glm8, warning = warn, eval = EVAL >>=
+GLM.8 <- glm(backPain30 ~ age + bmi + sex + arthritis + wealthQ, 
+  family = binomial(logit), data = bP)
+summary(GLM.8)
+@
+ Try plotting the \texttt{glm} object.
+ 
+In the next lecture we'll take a look at some diagnostics of potential problems in regression.
+
+%\printindex

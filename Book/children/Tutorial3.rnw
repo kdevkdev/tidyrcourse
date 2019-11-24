@@ -1,0 +1,28 @@
+%Template for children
+% Change chunk name to chapter title
+% ALl chunk names to be preceded by Tn or Ln  (where n is chapter or tutorial number)
+
+
+<<Tutorial3, include=FALSE>>=   
+set_parent("../tidyRcourseBook.rnw")
+@
+
+
+\chapter{Tutorial 3 - Dplyr dataframe manipulation with RMarkdown}\label{T3}
+
+\author{Brian Williams $<$\href{mailto:bjw649@gmail.com}%
+{bjw649@gmail.com}$>$}
+
+\section{Preliminaries}
+
+Go to the Code folder and open the R\_Course.R file.  Find "Tutorial3".
+
+\textbf{Set the working directory to that of the source file}.
+
+<<T3Preliminaries1, eval = FALSE>>=
+load("../Data/BackPain.Rdata")
+@
+
+Open your .Rmd file from Lecture 3 and add to it as you use/develop code in this tutorial.
+
+Prepare some new tables using group\_by or tabyl of variables you think may bear some relationship to back-pain. 

@@ -1,0 +1,238 @@
+
+
+<<Lecture4, include=FALSE >>=  
+library(tidyverse)
+library(knitr)
+set_parent("../tidyRcourseBook.rnw")
+warn <- FALSE
+EVAL <- FALSE
+@
+
+
+\chapter{ Lecture 4 - Introduction to ggplot2 basics}\index{Plotting- ggplot2}
+
+\author{Brian Williams $<$\href{mailto:bjw649@gmail.com}%
+{bjw649@gmail.com}$>$}
+
+
+\section{Preliminaries}
+
+Go to the courseCode folder and open Lecture4.R file. Do "Save As.." in the myRcode folder.  
+Then [Session->Set working Directory->To Source File Location]
+
+We'll use the backpain data to demonstrate some of the manipulations with factors and also the use of some of the standard plotting tools. So let's begin by loading that data set. If you haven't been using Ctl-Enter to step through the R code, this lecture will be a good time to try it out. Each time you click Ctl-Enter in the R code file, you execute the code in the line where the cursor lies and then the cursor moves to the next line, ready for another click.
+
+<<L4Preliminaries1, eval = EVAL >>=
+load("../Data/BackPain.Rdata")
+bP <- drop_na(bP)
+@
+
+
+Check \texttt{bP} in the Environment pane to ensure \texttt{wHR} is there. [Click on the blue arrow.]
+As we've mentioned before, a blanket \texttt{drop\_na()} or \texttt{na.omit()} dramatically reduces the Ghana (and Mexico) data sets.
+
+\section{Introduction}
+
+The package \texttt{ggplot2} is a major revision of the original ggplot package(no longer available).It is described in the second edition of Hadley Wickham's book. An early draft is included in the Resources folder (ggplot2\_2016-book.pdf).
+
+There is extensive documentation and examples \href{https://ggplot2.tidyverse.org/}{here}.
+
+Winston Chang has a \href{http://www.cookbook-r.com/}{web-site} too, with many examples. If you get stuck, the forum at ggplot2@googlegroups.com, is very active and provides rapid help.  Please do pay attention to their posting protocols.  You must provide minimal example codes which reproduce your problem. If you Google your problem, you'll also find a lot of answers on Stack Overflow.
+
+\section{ggplot2 concepts}
+
+The broad idea of graphical visualization is that we take our statistics - numbers and categories and map their values to a visual framework using plotting symbols and connections(lines) and other aggregation objects, along with other attributes such as colour, shape or size. Here's how this gets defined in \texttt{ggplot2}.
+
+\begin{itemize}
+\item \emph{Data}: in the form of a data frame is usually specified with the initiation of the plot space using the function \texttt{ggplot()}.\index{ggplot2!ggplot()}
+\item \emph{Geoms}: points, lines, bars etc are the types of geometric objects that are added in layers to the plot to represent the data,\index{ggplot2!geoms}
+\item \emph{Aesthetics}: are visual qualities specified in the geom, such as (x,y) coordinates, line colour, shapes etc \index{ggplot2!aesthetics}.  Default aesthetics can also be specified in the call to \texttt{ggplot()}.
+\end{itemize}.
+
+We'll begin with some simple scatter plots and then look at boxplots and finally histograms.
+
+\subsection{How to initiate a ggplot}
+
+Firstly, call ggplot to set up your plotting framework.  Usally you will specify the data set in this call, but no plot is generated at this time.  There will be a  \texttt{ggplot} object created which can be assigned to a name of your choice (p?). [Note that you can also specify default x,y coordinates in this call.]
+
+<<L4wHRvsBMI1a, warning=warn, eval = EVAL , eval = EVAL >>=
+p <- ggplot(bP )
+@
+Click on the blue arrow next to \texttt{p} in the Environment pane to see what's in it. Firstly you'll see the dataframe, and underneath it lots of other plotting information.  If you click on the \texttt{p} itself, you'll get a summary in the Edit pane.
+
+\subsection{Create a scatterplot}  \index{ggplot2::geom\_point}
+
+Now we add a \texttt(geom\_point) to generate a scatter plot.
+<<L4wHRvsBMI1b, warning=warn, eval = EVAL >>=
+p <- p + geom_point(aes(x = bmi, y = waistc))
+@
+ If you click on the \texttt{p}, you'll see that a lot more information has been added to the \texttt{ggplot}.  Notice the specification of the x and y coordinates as aesthetics.  This could have been done in the ggplot call.  To plot the object simply enter its name.
+ 
+<<L4wHRvsBMI1c, warning=warn, eval = EVAL >>=
+p
+@
+
+Let's concentrate now on the Mexican  60-69 year group.
+
+<<L4filterMex,warning=warn, eval = EVAL >>=
+bPMex <-  filter(bP, country=="Mexico", agegr=="60-69")
+@
+
+We can easily add some colour to separate urban and rural residence.\index{dplyr::mutate()}\index{Core functions!round()}\index{Core functions!rank()}\index{Core functions!length()}.
+
+<<L4WHRvsBMIc,warning=warn, eval = EVAL >>=
+ 
+p <- ggplot(bPMex) +
+  geom_point(aes(x = bmi, y = wHR,  colour = residence ),size=3 ) 
+p
+@
+
+And we can distinguish males and females by plotting them with different shapes.
+
+<<L4WHRvsBMId,warning=warn, eval = EVAL >>=
+p <- ggplot(bPMex) +
+  geom_point(aes(x = bmi, y = wHR,  colour = residence, shape = sex ),size=3 ) 
+p
+@
+
+
+If you want to choose your own colours, you can consult the ColorChart.pdf in the Resources folder.
+
+The aesthetics can also be specified in the ggplot arguments - so this code produces the same result:
+
+<<L4WHRvsBMI,warning=warn, eval = EVAL >>=
+p <- ggplot(bPMex, aes(x = bmi, y = wHR,  colour = residence, shape = sex)) +
+  geom_point(size=3)
+p
+@
+So here the aesthetics have been set in the \texttt{ggplot} function and then we see a texttt{geom\_point} added with a specified size. Note that because the size has not been listed as an aesthetic, it is independent of the data.  Sometimes, the size of the geom might be used to reflect a data item , in which case, it would be included in the aesthetic specification.
+
+And now let's add a line of best fit line with confidence limits on the linear regression.
+The \texttt{geom\_smooth} requires x,y coordinates.  The preceding chunk has placed default coordinates in \texttt{p}, by specifying them in the \texttt{ggplot} call. 
+<<L4ggplot4,warning=warn, eval = EVAL >>=
+p <- p   + 
+  geom_smooth(method=lm, size = 1)
+p
+@
+This plot has become much too complex and we'll need to split it up to interpret it better.  We'll deal with this splitting in \ref{Lecture6}.
+
+\section{ Boxplots} \index{ggplot2::geom\_box}
+Let's have a look at some Boxplots. 
+
+With boxplots, the box is constructed with the values on the y coordinate.  If a factor is specified for the x-coordinate, a box is produced for each of its levels.  And if another factor is specified as an aesthetic, a boxplot is produced for each of its levels!
+
+\subsection{How it is done}
+As before we begin with a call to ggplot, specifying the data set and optionally the aesthetics.
+Then we add a \texttt{geom\_box}, including the aesthetics, if not already included in the ggplot call, and finally we enter the name of the object to plot it.
+So here are the two ways of doing it:
+
+<<L4ggplotResAngBMIa,warning=warn, eval = EVAL >>=
+p <- ggplot(bP, aes(x = residence, y = bmi,  colour = angina )) +
+      geom_boxplot()
+p
+@
+
+...and again with the aesthetic spcification with the geom.
+<<L4ggplotResAngBMIb,warning=warn, eval = EVAL >>=
+
+p <- ggplot(bP) + 
+      geom_boxplot(aes(x = residence, y = bmi,  colour = angina ))
+p
+@
+
+. and a little bit more busy and colourful...
+
+<<L4BoxplotWEa,warning=warn, eval = EVAL >>=
+p <- ggplot(bP, aes(x = eduS, y = height,  colour = wealthQ )) + geom_boxplot()
+p
+@
+It is also possible to specify the dataset in the geom, rather than in the ggplot call:
+
+<<L4BoxplotWEb,warning=warn, eval = EVAL >>=
+p <- ggplot() +
+  geom_boxplot(data = bP, aes(x = eduS, y = height,  colour = wealthQ ))
+p
+@
+
+\subsubsection{Boxplots - interaction parameter}  \index{ggplot2::geom\_box}
+We can easily present a number of box plots conditioned on two or more factors of interest by using the interaction parameter. Here's an example:
+<<L4box1, eval = EVAL >>=
+p <- ggplot(data = bP, aes(x = interaction(sex, residence, backPain30), y=bmi))
+p <- p + geom_boxplot(fill = 'orange')
+p
+@
+...and you can rearrange them....
+
+<<L4box2, eval = EVAL >>=
+p <- ggplot(data = bP, aes(x = interaction(backPain30, residence, sex), y=bmi))
+p <- p + geom_boxplot(fill = 'pink')
+p
+
+@
+Now let's take a look at histograms.
+
+\section{Histograms} \index{ggplot::geom\_histogram}
+
+It is easy to generate histograms and box plots with \texttt{ggplot}.
+
+\subsection{How it's done}
+Histograms require the specification of an x aesthetic.
+
+<<L4hist1, eval = EVAL >>=
+p <- ggplot(data = bP, aes(x = bmi))
+p <- p + geom_histogram()
+p
+@
+Quite ugly!  Histograms default to 30 'bins'. And the default colour needs some attention!
+You can specify the fill colour and the outline colour, as well as the bin width.
+
+<<L4hist2, eval = EVAL >>=
+p <- ggplot(data = bP, aes(x = bmi))
+p <- p + geom_histogram(binwidth = 0.25, fill = 'beige', colour = 'brown')
+p
+@
+Specifying the number of bins is just a little bit more involved -  we need to firstly compute the width for the required number of bins:
+
+<<L4hist3, eval = EVAL >>=
+binsize <- diff(range(bP$bmi))/60
+p <- ggplot(data = bP, aes(x = bmi))
+p <- p + geom_histogram(binwidth = binsize, fill = 'beige', colour = 'brown')
+p
+@
+You can check the documentation of \texttt{diff()} and \texttt{range()} for yourselves!
+
+Let's superimpose the men and women's bmi histograms.
+<<L4hist4, eval = EVAL >>=
+p <- ggplot(data = bP, aes(x = bmi, fill = sex))
+p <- p + geom_histogram(binwidth = binsize,
+                        position = 'identity',
+                        colour   = 'brown',
+                        alpha    = 0.5)
+p
+@
+Notice firstly that there is an extra aesthetic - a histogram needs only one variable. specified as 'x'. We can colour the fill however to show other attributes. 
+
+We see two new parameters. Alpha is used in plots to make the plot semi-transparent. You choose a suitable level of transparency.  Go to the \href{http://docs.ggplot2.org/}{ggplot docs site} for the documentation on geom\_histogram and learn about 'position'!  Not much help there.  Take a look at the on-line \href{https://ggplot2.tidyverse.org/reference/#section-layer-position-adjustment}{docs}.
+
+You may not get a clear answer there, but there are lots of nice examples. Basically, the default here is to stack the bars, \texttt{position = 'identity'} leaves them in place and we use the transparency and colour differences to distinguish them.
+
+
+
+
+\section{Over-plotted data}\index{Overplotted data - alpha}
+At the start of the lecture, we produced our first plot with many points. With \texttt{ggplot}, we can make this plot a little more accessible.
+We do this by making the plotted points semi-transparent, using ggplot's '\texttt{alpha}' parameter, which we saw in histograms above. We'll add a line of best fit, too.
+<<L4op1, eval = EVAL >>=
+p <- ggplot(bP, aes(x = bmi, y = waistc))
+p <- p + geom_point(alpha=0.1)
+p <- p + stat_smooth(method = lm, lwd = 2)
+p
+@
+This plot at least gives us a better idea of where the bulk of the data lie.  Most respondents have bmi's between about 18 and 30 and their wHR levels run from 0.3 to around 0.65 (just roughly eye-balling the data -  use dplyr to do a quick check!). The relationship between bmi and disability is quite well defined.
+
+
+
+
+
+
+%\printindex

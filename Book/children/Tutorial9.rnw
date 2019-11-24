@@ -1,0 +1,109 @@
+%Template for children
+% Change chunk name to chapter title
+% ALl chunk names to be preceded by Tn or Ln  (where n is chapter or tutorial number)
+
+
+<<Tutorial9, include=FALSE>>=   
+set_parent("../tidyRcourseBook.rnw")
+warn <- FALSE
+EVAL = FALSE
+@
+
+
+\chapter{Tutorial 9 - Practice mapping with ggplot2}
+
+\author{Brian Williams $<$\href{mailto:bjw649@gmail.com}%
+{bjw649@gmail.com}$>$}
+
+
+\section{Preliminaries}
+
+Go to the Code folder and open the courseCode.R file.  Find "Tutorial9".
+
+\textbf{Set the working directory to that of the source file}.
+
+
+
+\subsection{Washington State water catchments example}
+
+The next example is part of a post by Bethany Yollin on \href{http://mazamascience.com/WorkingWithData/?p=1494}{this page}, which neatly describes the use of mapping for one of my interests, which is hydrology.  Have a look at the whole post, which shows how to subset the data and perform some simple calculations. A pdf of the post is also stored in the Lab 5 folder.
+
+Public health people, too, must of course, be interested in water sources because of the attendant potential for disease transmission or habitats for vectors such as mosquitoes. Yollin has used the standard global approach using the \texttt{rgdal} package, though the \texttt{maptools} package should work equally well. 
+
+<<L9Yollin1,  warning = warn, eval = EVAL >>=
+# load libraries
+library(ggplot2)
+library(sp)
+library(rgdal)
+library(rgeos)
+library(dplyr)
+
+# Create a string containing the location of the shapefile
+localDir <- "../Data/wria"
+# create a layer name for the shapefiles (text before file extension)
+layerName <- "WRIA_poly"
+# read data into a SpatialPolygonsDataFrame object
+dataProjected <- readOGR(dsn=localDir, layer=layerName)
+class(dataProjected)
+@
+\index{Package!ggplot2}\index{Package!sp}\index{Package!rgdal}\index{Package!rgeos}\index{Package!dplyr}
+The output shows the conversion from an ESRI shapefile to an R \texttt{SpatialPolygonsDataFrame} (from the \texttt{sp} package), which is the de facto GIS standard data object in R. 
+
+In the process of creating data frames and joining external data, there is potential for changed order of rows, so in order to maintain consistency between the non-map data and the map-data in the SpatialPolygonsDataFrame, we add a row ID to its data 'slot' (Slots are part of S4 class data objects in R which are accessed using the '@' symbol.)
+
+Next, we use the ggplot function \texttt{fortify()}\index{ggplot::fortify} to convert the \texttt{SpatialPolygonsDataFrame} to a standard R dataframe, which is what ggplot usually plots from. 
+
+Having created a data frame containing  we can then use a \texttt{left\_join} function to add to it, the watershed data which is stored in the data slot of the SpatialPolygonsDataFrame.
+<<L9Yollin2,  warning = warn, eval = EVAL >>=
+# add to data a new column termed "id" composed of the rownames of data
+dataProjected@data$id <- rownames(dataProjected@data)
+# create a data.frame from our spatial object
+watershedPoints <- fortify(dataProjected, region = "id")
+head(watershedPoints)
+# merge the "fortified" data with the data from our spatial object
+watershedDF <- left_join(watershedPoints, dataProjected@data, by = "id")
+head(watershedDF)
+#Alternative: watershedDF <- merge(watershedPoints, dataProjected@data, by = "id")
+# NOTE : 
+# : An equivalent SQL statement might look something like this:
+# : SELECT *
+# : FROM dataProjected@data
+# : INNER JOIN watershedPoints
+# : ON dataProjected@data$id = watershedPoints$id
+#OR using the plyr package
+# library(plyr)
+# watershedDF <- join(watershedPoints, dataProjected@data, by = "id")
+
+@
+The \texttt{head()} statement has shown us that the watershedPoints dataframe contains latitude and longitude pairs in sequence which are associated with various points on boundaries on the map. 
+
+These can be readily joined with straight lines to produce the map's boundaries.
+The new dataframe \texttt{watershedDF} contains additional information about the watersheds contained by this boundary information.
+
+<<L9Yollin3,  warning = warn, eval = EVAL >>=
+N# Plotting with ggplot2
+ggWatershed <- ggplot(data = watershedDF, aes(x=long, y=lat, group = group,
+fill = WRIA_NM)) +
+geom_polygon() +
+geom_path(color = "white") +
+scale_fill_hue(l = 40) +
+coord_equal() +
+theme(legend.position = "none", title = element_blank(),
+axis.text = element_blank())
+print(ggWatershed)
+@
+
+Themes are a way of changing or setting backgrounds, axes, titles etc in a standardized way. IN this case the legend has been removed, the axis text has been removed and the title has been removed.
+
+\section{Fast maps using \texttt{coord\_quickmap} and \texttt{map\_data}}
+
+    \texttt{ggplot} offers a quick approximate coordinate transformation called \texttt{coord\_quickmap} which is easy to use for 'small' countries.  It ensures that the aspect ratio in the central 1m by 1m square of the plot is accurate. Here is an example:
+    
+<<T9quickmap, eval = EVAL>>=
+worldMap <- ggplot(map_data("world2"), aes(long, lat, group = group)) +
+  geom_polygon(fill = "white", colour = "dark green") +
+  xlab(NULL) + ylab(NULL) 
+ # worldMap + coord_quickmap()
+  worldMap + coord_map("mercator")
+@
+    

@@ -1,0 +1,305 @@
+
+% ********  Template for children  ********
+
+% 1. Save as appropriate chapterName (Lecture7, Tutorial10 etc)
+% 2. Change title to above
+% 3. Change opening chunk name (Temp0) to chapter title
+% 4. Remove/replace chunk Temp1
+
+% All chunk names to be preceded by Tn or Ln  (where n is chapter or tutorial number)
+
+
+
+<<Lecture9, include=FALSE>>=
+library(knitr)
+set_parent("../tidyRcourseBook.rnw")
+warn = FALSE
+EVAL = FALSE
+@
+
+
+\chapter{Lecture 9- Mapping in ggplot2}\index{ggplot2}\label{Lecture9}
+
+\author{Brian Williams $<$\href{mailto:bjw649@gmail.com}%
+{bjw649@gmail.com}$>$}
+
+\section{Summary}
+This session continues with data manipulation, introducing the wide and long form and mapping in the ggplot2 package\index{Package!ggplot2}.
+
+\section{Logistics} 
+
+Go to the Code folder and open the courseCode.R file.  Find "Lecture9".
+Set the working directory to that of the source file.
+
+
+\subsubsection{Before the lab}
+
+I'd like you all to download shape files and .Rdata files for a country in which you have an interest.
+Find the site \texttt{gadm.org}. On the home page you will see a prominent line: 
+\begin{quote}
+\item {You can download the data by \underline{country} or for the whole whole world.}
+\end{quote}
+In this line 'country' is a link. Click on it.
+Choose your country and download, firstly, a \emph{shape file}\index{Shape file}. .The shape file will come as a zipped file, incorporating the ISO3 country name of the country you chose. Secondly, (going back to the previous page), download a .Rdata (selected from the drop-down menu 'File format'). Place both files in your Code folder.
+Extract all from the zip shape file - it should create a folder in the Code folder with the same name as your zip, but without the '.zip' extension.
+
+You will need a number of specialised mapping packages. Some of these contain large datasets.  It will help if you install any of these which are not already installed  before coming to Tutorial 8.
+\begin{enumerate}
+\item maptools\index{Package!maptools}
+\item rgdal\index{Package!rgdal}
+\item rgeos\index{Package!rgeos}
+\item maps \index{Package!maps}
+\item sp\index{Package!sp}
+\item spam\index{Package!spam}
+\item fields\index{Package!fields}
+\end{enumerate}
+
+\subsubsection{At the beginning of the session}
+
+Go to the Code folder and open the R\_Course.R file.  Find Lecture9".
+\textbf{Set the working directory to that of the source file}.
+
+
+\section{Mapping}
+
+
+
+The main theme in this lecture will be using ggplot to prepare maps incorporating a number of different representations of data. There are a number of useful sources for help on mapping including the \href{http://cran.r-project.org/web/views/Spatial.html}{CRAN Task View: Analysis of Spatial Data}.The recent paper by \href{http://journal.r-project.org/archive/2013-1/kahle-wickham.pdf}{Kahle and Wickham (2013)}\cite{Kahle2013} is also a neat introduction.
+
+One of the significant issues in using maps is that country borders change and many of the maps available on the web are not up-to-date. If borders change in countries which are of particular interest with regard to your data, care must be taken to find map data with accurate border information.  There can be political problems if you try to publish articles with maps which do not have current borders.
+
+The \href{http://cran.r-project.org/web/views/Spatial.html}{CRAN Task View: Analysis of Spatial Data} is the best overview of what's available in R for mapping purposes. There are lot's of packages doing things you may never have heard of if you are not a professional map-maker! There are many who say that R is poised to overtake the traditional GIS software for mapping analysis - others suggest that the focus of traditional GIS is mapping capabilities, while R's strength is statistical analysis of spatial data - with some mapping added! 
+This said, there are a number of less flexible but very straightforward mapping systems that you may like to experiment with before diving into the murky waters of \texttt{ggmap}\index{Package!ggmap} and all the others! Have a look for example, at the package \texttt{rworldmap}'s vignette\index{Package!rworldmap} and you will see that there are a number of reasonably straightforward approaches to getting a number of interesting maps on global scale. The package does provide quite recent useful maps of country boundaries. Unfortunately, though, (at the time of writing) this package does not allow you to map within country data.
+
+Most significant mapping datasets these days use a storage format called a 'shapefile', which is in fact a folder containing a collection of files which store various mapping information and optionally other data related to the locations being mapped. For our purposes there are two ways of reading shapefiles, one using the package \texttt{rgdal}\index{Package!rgdal} and the other using the package \texttt{maptools}.  Both will be demonstrated in this lab. The former (\texttt{rgdal}) deals effectively with coordinate systems, which are important in maps drawn for world scales, while \texttt{maptools}\index{Package!maptools} is very adept at dealing with maps at country scales. If you would like to read a comparson of these two approaches, see \href{https://www.nceas.ucsb.edu/scicomp/usecases/ReadWriteESRIShapeFiles}{here} and to read more about the shapefiles themselves, see \href{http://www.digitalpreservation.gov/formats/fdd/fdd000280.shtml}{ here.}
+
+Perhaps the most authoritative reference on mapping in R is the \href{http://www.asdar-book.org/}{book} by Roger Bivand et al. A recent introductory book, by Brunsdon and Chen,  focusses mostly at country level with US examples and looks probably more readable for a beginner than Bivand's book.  Its Amazon page is \href{http://www.amazon.com/dp/1446272958/ref=rdr_ext_tmb}{here}. Dorman's "Learning R for geospatial analysis", is a nice introductory level to the basics of geospatial analysis and how to do it in R. (I've only browsed Bivand's first edition and Dorman's book and I haven't seen Brunsdon's book.)
+
+\subsection{Country scale maps from GADM}
+At world scale, care must be taken about the location of country boundaries since many of the map data freely available on the web are not current - especially in war zones!  Some governments will be especially sensitive and if you intend to publish maps, you need to be  careful about the current accuracy of your maps.
+
+You also need to be aware of the need to have an appropriate coordinate projection.
+
+You will have noticed that when you unzipped your download of the shape file from GADM, it was in fact a number of files. Keep them all in the same directory, because a shape file is not a single file - all are necessary for the shape file to work properly! 
+
+The GADM files are of administrative regions at various scales, coarsest being 0. Almost all countries have at least level 2 and many have level 3.
+
+Winston Chang's book has a little bit of information on using maps in ggplot. Here's his code to access a shapefile using the maptools package. (Remember that this package does not automatically sort out an appropriate projection, though at country scale its default is probably OK.) 
+
+
+
+
+
+
+I've got the shapefile folder for Australia in the Data folder. Notice that a shapefile is actually a folder with a number of files, including one with extension .shp, which is the layer argument in the function \texttt{readOGR()}. If you've put a shapefile folder from a country of your own choice in the Data folder, edit the code to agree with the three letter ISO Code name for your chosen country in the argument of \texttt{readOGR()} and then run the block of code below.
+
+<<L9ShapefileChang1,warning = warn, eval = EVAL>>=
+library(ggplot2)
+library(rgdal)
+library(sp)
+SF <- readOGR(dsn = "../Data/gadm36_SWE_shp/gadm36_SWE_2.shp", layer ="gadm36_SWE_2")  #1
+#SF <- readRDS("../Data/gadm36_SWE_2_sp.rds")                  # 1.
+class(SF)                                                     # 1.
+head(SF@data)                                                 # 2.
+#plot(SF)                                                      # 3.
+cMap2 <- fortify(SF)                                          # 4.
+head(cMap2)                                                   # 5.
+myMap <- ggplot(cMap2, aes(x=long, y= lat, group = group))+ geom_path() 
+#myMap <- myMap + coord_equal()  +ylim(-45,-8) +xlim(110,155)
+myMap <- myMap + coord_map("mercator")
+#myMap = myMap + coord_map("ortho", orientation = c(-34, 151, 0))
+myMap 
+@
+
+
+
+\index{Package!mapproj}\index{Package!maptools}\index{Package!ggplot2}
+\subsubsection{Notes}
+\begin{enumerate}
+
+
+
+
+\item{The function \texttt{readOGR} (from the \texttt{rgdal} package) reads a shape file and converts it to a \texttt{SpatialPolygonsDataFrame} object. This is not a 'simple' data frame but contains many layers of data in 'slots'. It is a class of object that is fundamental to mapping in R - but is too complex for us to deal with here. If you enter \texttt{str(SF)} you will get an overwhelming  screen full of information!}
+\item {Here you see some of the upper layer items stored in the \texttt{SpatialPolygonsDataFrame} object.}
+
+
+
+
+\item {Yes - \texttt{base::plot} knows how to deal with a \texttt{SpatialPolygonsDataFrame} object. You won't have a lot of flexibility with this approach, though.}
+\item {The \texttt{fortify} function is from ggplot2. Its purpose is 'to convert a generic R object into  a data frame useful for plotting'. The official documentation for \texttt{fortify()} is very terse. You will need to do a web search if you have trouble with the function calls.}
+\item {Having 'fortified' the \texttt{SpatialPolygonsDataFrame} object, we now have a standard data frame that we can access with the usual functions in \texttt{ggplot2}. \texttt{head} shows us that we've not converted a lot of data in this process!}
+\end{enumerate}.
+
+
+
+\subsection{Plot of Burden of Health (back pain disability) using \texttt {rworldmap}}
+
+In the next code chunk, we'll make use of the data in the package \texttt {rworldmap}\index{Package!rworldmap} to produce a world map plotted with Burden of Health measured as years lived with disability per 100000 (YLD) on a coloured scale for each country. In addition, we highlight the Sage countries by giving them a magenta coloured border and annotating them with their names.
+
+<<L9BofH1, warning = warn, eval = EVAL>>=
+# This is a simple plot of the Burden of Health resulting from Back Pain
+# The units are YLD - years lived with disability per 100,000.
+# The borders of the Sage countries have been included in RED
+# and their names annotated. 
+# The BofH plot covers most countries. Greenland has been set equal to Iceland
+# South Sudan has been set equal to Sudan
+# Note that merging has been done on country names so some smaller countries with
+# Inconsistent names in the two dataframes may not have had their BofH included
+# (Better to use ISO-3 names for uniqueness and consistency)
+
+library(rworldmap)
+library(ggplot2)
+library(scales)
+library(dplyr)
+
+data(countriesLow)                                                    #1.
+plot(countriesLow)
+class(countriesLow)                                                   #1.
+head(countriesLow@data)
+wmap_df <- fortify(countriesLow)  # Converts  to a data.frame
+head(wmap_df)
+names(wmap_df)[6] <- "NAME"
+#------------------------------------------------------------------------------
+bp50_69 <- read.csv("../Data/YLD_50-69.csv",header=TRUE,stringsAsFactors=FALSE)   #2
+head(bp50_69)    # Just country name and YLD
+
+# merge the dataframes
+map.df <- left_join(wmap_df, bp50_69, by = "NAME")             #3.
+map.df <- left_join(wmap_df, bp50_69)             #3.
+map.df
+map2 <- arrange(map.df,order) # sort to original polygon order
+
+breaks <- c(1500, 2000, 2500, 3000, 3500, 4000, 4500)  # For legend
+
+theme_opts <- list(theme(panel.grid.minor = element_blank(),
+                         panel.background = element_blank(),
+                         plot.background = element_rect(fill="lightblue"),
+                         panel.border = element_blank(),
+                         axis.line = element_blank(),
+                         axis.title.x = element_blank(),
+                         axis.title.y = element_blank(),
+                         plot.title = element_text(size=22)))            #4.
+
+pp <- ggplot(data = map2, aes(x=long, y=lat,group=group, fill=YLDs)) +
+#pp <- ggplot(data = map2, aes(x=long, y=lat, fill=YLDs)) +
+    scale_fill_gradientn(colours = rainbow(7),na.value="white",
+                         breaks = breaks, labels = format(breaks))+
+    coord_fixed() + 
+    geom_polygon(colour="white")  
+pp                                                                       #5.
+#-------------------------------------------------------------------------------
+# Now we add the SAGE country outlines 
+
+SageCountry <- c("China", "Ghana","India", "Mexico", "Russia", "South Africa") 
+# strings for names on map
+labelLong <-   c(   100.,   -10.,    66.,     -120.,     90.,         20.) 
+# location for country name on map
+labelLat  <-   c(   37.,     0.,     18.,      20.,      60.,        -40.)  
+# location for country name on map
+
+# Now construct a data.frame for ggplot
+cL  <- data.frame( long = labelLong, lat= labelLat,                     #6.
+                   txt = SageCountry,stringsAsFactors=FALSE )
+
+# First we plot the SAGE country borders
+for ( i in 1:length(SageCountry)){                                      #7.
+  bb <-  map2[map2$NAME== SageCountry[i],]  # grab the Sage country borders
+  pp <- pp + geom_path(data = bb,aes(x=long,y=lat), colour = "magenta",size=1)
+ rm(bb)  # 
+}
+
+# Now do the annotation of country names
+  pp <- pp + annotate("text", x = cL$long, y = cL$lat,                  #8.
+                      colour= "black",       
+                      size  = 4,
+                      label = cL$txt)  
+
+# Include a title for the plot
+tt1 <- "Years lived with disability (YLDs) per 100,000 - Group age 50-69 "
+ pp <- pp +
+  ggtitle(tt1)+
+  theme(plot.title = element_text(size = rel(2), colour = "blue"))
+pp                                                                     #9.
+
+@
+\index{Package!scales}\index{Package!dplyr}\index{Package!rworldmap}\index{Package!ggplot2}
+\subsubsection{Notes}
+\begin{enumerate}
+\item{\texttt{countriesLow} is a low resolution shape file of the world's country boundaries.}
+\item{Data were sourced from \href{http://www.healthdata.org/gbd/data}{IHME in Seattle, USA}. }
+\item{Merge the two data frames using the country names as the key for merging. }
+\item{Sets up an essentially blank panel for the plot.}
+\item{Initial plot.}
+\item{A separate data frame is constructed for the SAGE country name annotation.}
+\item{We add one layer at a time in a loop for the country borders.}
+\item{Add the SAGE country name annotations.}
+\item{Add title and print to screen.}
+\end{enumerate}
+
+\subsection{Clean background - Chang again}
+Winston Chang's code for a clean background is given in the next chunk.  If you run it and then add it to the pp ggplot object, you'll get your map without the axes and with the title back to its default font.
+
+<<L9theme_clean, warning = warn, eval = EVAL>>=
+theme_clean <- function(base_size = 12) {
+  require(grid) # Needed for unit() function
+  theme_grey(base_size) %+replace%
+    theme(
+      axis.title        = element_blank(),
+      axis.text         = element_blank(),
+      panel.background  = element_blank(),
+      panel.grid        = element_blank(),
+      axis.ticks.length = unit(0, "cm"),
+      panel.spacing     = unit(0, "lines"),
+      plot.margin       = unit(c(0, 0, 0, 0), "lines"),
+#      plot.background   = element_rect(colour = "black"),  # leave out for no box
+      complete = TRUE
+    )
+}
+# Attach it t the pp object:
+pp + theme_clean()
+@
+\index{Package!grid}
+
+
+\subsection{Country plot of world, using Natural Earth data}
+Another source of country data at a number of scales is the \href{http://www.naturalearthdata.com/}{website} Natural Earth.  Here, 110m scale data for country mapping can be obtained in shape file format.  I've provided the file for you in the Cambro download and you should have placed it in your R\_course/Data folder. 
+
+This time we'll not use maptools and \texttt{readShapePoly}. Instead we'll use the package rgdal and \texttt{readOGR}. This appears to be the preferred package by experienced users on the web and is R's interface to the "Geospatial Abstraction Library (GDAL). For an overview of  the spatial packages available in R, have a look at \href{http://cran.r-project.org/web/views/Spatial.html}{this webpage}.
+
+
+<<L9readOGR,  warning = warn, eval = EVAL>>=
+Nlibrary(maps)
+library(ggplot2)
+library(rgdal)
+
+# read shapefile
+wmap <- readOGR(dsn = "../Data/ne_110m_admin_0_countries", 
+                layer="ne_110m_admin_0_countries")
+class(wmap)    # SpatialPolygonsDataFrame
+Amap <- wmap[wmap$name == "Australia",]      # Subsetting to grab Australian data
+plot(Amap)          
+wmap_df <- fortify(wmap, regions = ISO_A2)  # convert SpatialPolygonsDataFrame to a dataframe
+head(wmap_df)
+
+base_world <- ggplot(data = wmap_df, aes(x = long, y = lat)) + coord_fixed()+
+  
+  geom_polygon(aes(group = group), fill = "wheat") + 
+  geom_path(aes(group = group), colour = "grey40") + 
+  theme(panel.background  = element_rect(fill = "lightsteelblue2", colour = "grey"), 
+        panel.grid.major  = element_line(colour = "grey90"),
+        axis.ticks        = element_blank(), 
+        axis.ticks.length = unit(0, "cm"),
+        axis.text.x       = element_text(size = 14, vjust = 0), 
+        axis.text.y       = element_text(size = 14, hjust = 0.3)) + 
+  labs(y="",x="") 
+base_world
+
+@
+\index{Package!maps}\index{Package!ggplot2}\index{Package!rgdal}
+\subsection{ Other learning resources}
+There is an example of plotting at regional scale on \href{https://github.com/hadley/ggplot2/wiki/plotting-polygon-shapefiles}{Hadley Wickham's github ggplot repo}.
+
+%\printindex
+
+

@@ -1,0 +1,350 @@
+<<Lecture2, include=FALSE, eval = TRUE >>=
+library(knitr)
+library(tidyverse)
+set_parent("../tidyRcourseBook.rnw")
+warn <- FALSE
+EVAL = FALSE
+@
+
+
+\chapter{Lecture 2 - Vectors, dataframes}\index{Core!Factors}
+
+\author{Brian Williams $<$\href{mailto:bjw649@gmail.com}%
+{bjw649@gmail.com}$>$}
+
+\section{Summary}
+
+In this lecture there will be a brief discussion of some of the important terminology and components of R - objects (vectors, data frames), functions, notation conventions etc.
+We will then look at a self documenting language called RMarkdown, which allows incorporation of R code directly  into documentationwhich can be transformed into HTML for web pages or MS Word or PDF form.
+
+\section{Logistics}
+
+Go to the Code folder and open the courseRcode folder.  Find "Lecture2.R". Save As.. in the myRcode folder.
+
+As before, use mouse/menu to set the working directory to the file location: [Session->Set Working Directory->To Source File Location]. \textbf{This is an important step in every class!}
+
+
+\section{Vectors}\index{Vectors}\label{vectors}
+
+Vectors play an important role in our data analysis because the data in each of our variables \textsl{is} a vector.  A vector is a list of data which are all of the same type - numbers, character strings or factors.  We can use vectors to construct dataframes or we can extract vectors from dataframes.
+Because they have such an important role, we'll take a brief look at how they are dealt with in R.
+
+
+\subsection{Elementary construction of vectors}
+The function \texttt{c(some comma-separated list of object arguments)}\index{Core functions!c()} \texttt{combines} the arguments into a single new object (if possible!). It is one of \textbf{the most widely used of all R functions} and is used very often when you want to use a group of numbers or characters as an argument in some other function. This is one you MUST remember. Its murky origins in Unix, mean that it is also sometimes referred to as \emph{concatenate}.
+
+If you use \texttt{c()} to combine  a list of arguments which have different classes, R tries to figure out how the user might want to combine the arguments with a common type. (Remember our standard \emph{atomic vector} must have all elements of the same class.)
+
+Here are some examples:
+<<L2Coercion,  warning=warn, eval = EVAL >>=
+##Automatic variable conversion (Coercion)
+#----------------------------------------------------------------------------------
+A <- 11
+B <- 7
+C1 <- A + B
+a <- c(A,B,C1)  # Concatenates or binds the arguments into a vector
+a
+str(a)     #  Very useful standard command in R for printing the structure of an object
+d <- "Victoria"
+t <- c(d,'geoff', 'Lars')
+t
+t <- c(t,'Stig')
+t
+t <- c(t,A)
+t
+t <- c(1,2,"Eugenie")
+str(t)
+#----------------------------------------------------------------------------------
+@
+Note that R is OK with converting the integer g to a numeric to form the four element vector, a.
+
+Elements of vectors are accessed as well a displayed, using square brackets as we shall see below.
+
+The operator ':' is very useful for creating vectors of simple sequences and selecting sequential elements in vectors.
+
+
+It is often useful to know how long vectors are; the function \texttt{length(v)}\index{Core functions!length()} returns the length of v.
+
+<<L2Vectors, warning=warn, eval = EVAL >>=
+##vector manipulations
+#----------------------------------------------------------------------------------
+length(a)
+ss <- 5:22      # creates a vector, ss, whose elements are the sequence 5,6... to 22
+ss
+ss[6]
+length(ss)
+# and a little bit tricky:
+sss <- ss[ss > 20]   # assigns those values of ss which are greater than 8 to a
+# new vector sss
+sss
+sum(sss)
+#-----------------------------------------------------------------------------------
+@
+We refer to commands like  \texttt{sss <- ss[ss > 20]} as 'filtering').  We will see in \ref{L3} that there is a tidyverse function called 'filter' which is used for dataframes.
+The function \texttt{sum()}\index{Core functions!sum()} returns the summation of the elements of the specified vector.
+
+We'll spend more time later looking at filtering and data preparation but let's jump ahead and load up a real data-set.  'Data frame' is R jargon  equivalent to a 'data set' in most other statistical software.
+
+
+R has a range of objects which can store data of various kinds.  The simplest is the \textbf{vector} which is simply an ordered collection of data items of a single type. If you want an important example, think of it as the observations of a variable in your data set. We will do a lot of manipulation of data and much of it involves operating with vectors.
+
+\subsection{Addressing vector elements}\index{Vectors!addressing elements}\label{vecAddress}
+
+The number of items in the vector is its length. The individual item in the sixth position in a vector, \texttt{aa} can be accessed by reference to \texttt{aa[6]}.
+
+We can access a sub-vector consisting of the 3\textsuperscript{rd}, 4\textsuperscript{th} and 5\textsuperscript{th} components using \texttt{aa[3:5]}, or \texttt{aa[c(3, 4, 5]}. The latter can be used to access any set of indices.
+
+Using a minus '-' sign in front of an index is used to delete that element.
+
+<<L2VectorAddressing, warning=warn, eval = EVAL >>=
+
+cc <- c(1, 4, 98, 17, 43, 172, 34, 67, 58, 143, 27, 72, 44, 88, 83)
+cc
+cc[c(3,5,8)]
+ee <- c('Tom', 'Dick', 'Harry', 'Nils', 'Lars', 'Stig', 'Hans')
+ee
+eMharry <- ee[-3]
+eMharry
+@
+
+\section{Data frames}\index{Data frames}
+A data frame is a list of variables.  Each list element (variable) is a vector of equal length. The elements of the list are the columns of the data frame.  The types of these vectors (the data frame columns) are not required to be the same, though, of course, within the columns each element must be the same. 
+
+We have already seen that the function \texttt{read\_csv()} returns a data frame. We can also construct them from equal length vectors. 
+
+Data frames can access columns using df\$colName notation  and they can also use matrix-style notation. These are both demonstrated in the next script.
+
+Where possible, it is recommended that you use the df\$colName notation because it is easier to follow in scripts and also if column order is changed, the named notation still works.\index{Core functions!data.frame()}.
+As you might expect, a data frame can be constructed from a group of equal length vectors.
+
+<<L2DataFrames1, warning=warn, eval = EVAL >>=
+people <- c('Lena', 'Solveig', 'Guinevere', 'Hans', 'Erik' )
+byear <-  c(1982,      1976,      1949,      2001,   1967)
+score <-  c( 22,        43,        87,        45,     60)
+salary <- c(40,         47,        31,        NA,     75)
+df <- data.frame(Name = people, BirthYear = byear, Score = score, Salary = salary)
+@
+ NOTE that this is a little confusing to look at, because the variables have been laid out across the page (rows) and in the dataframe they are placed in columns. 
+ 
+Here are the common ways of accessing elements of the dataframe 
+<<L2df2, warning=warn, eval  = EVAL >>=
+df$Name[3]    # List form - 3rd row of column 'Name'
+df[2,3]       # Matrix form - 2nd row of 3rd column
+df[,3]        # Row number omitted, assume ALL rows, i.e. this is equivalent to df$score
+df[4:5,1:3]   # Selects the subset - rows 4 and 5, columns 1  to 3
+@
+
+Here are a few of core R's functions to investigate dataframe structure.
+<<L2df3, warning=warn, eval  = EVAL >>=
+#Other basic functions -a reminder
+summary(df)
+names(df)
+names(df)[3]
+dim(df)
+ncol(df)
+nrow(df)
+str(df)
+str(people)
+class(df)
+@
+Notice that the character vector 'people' has become a factor when incorporated into a dataframe.
+
+\subsection{Tibbles}
+
+Tibbles are the tidyverse equivalent of a dataframe, but they avoid some of the problems - like if you name a large dataframe in the Console, you will fill the pane with numbers. A tibble will only print the first ten row and as many columns as will fit on the screen. The printout shows the variable type, too.
+If you really want to see all your variables, you can use \texttt{print} and set the \texttt{width} to \texttt{Inf}.
+
+The datasets available in the core release of R are generally data.frames.  Dataframes can be converted to tibbles easily as follows:
+
+<<L2Tibble1, warning=warn, eval  = EVAL >>=
+df <- as_tibble(df)
+class(df)
+@
+
+
+Finally a warning - occasionally older R functions won't work with tibbles so you may need to convert your tibble back to a data.frame. You do this as follows:
+
+<<L2Tibble2, warning=warn, eval  = EVAL >>=
+df <- as.data.frame(df)
+class(df)
+@
+
+
+\section{Type conversion}
+Frequently, we require conversion of types as we have just done with tibbles. For example, in preparing a heading for annotation of a plot, we might want to convert a numeric value stored in a variable to a character variable to be included in a text string. \index{Core functions!paste()}\index{Core functions!as.character()} \index{Core functions!as.numeric()}
+<<L2asCharacter, warning=warn, eval  = EVAL >>=
+plotNumber <- 3
+t1 <- paste('This is plot number', as.character(plotNumber), sep = " ")
+t1                                                                     
+@
+[in fact, R will coerce the numeric to a character tytpe automatically, without the use of the \texttt{as.character} function]. 
+
+Similarly, we might want to explicitly convert a character variable with value "7" to a numeric type:
+<<L2asNumeric, warning=warn, eval  = EVAL >>=
+
+chv <- '7'
+17 + chv               # Does not work
+17 + as.numeric(chv)
+@
+There is a large suite of 'as.type()' functions which operate in similar vein for coercion where it is possible.  Type '\texttt{??as.}' (without the quotation marks) into the Console and take a look at RStudio's handy little prompt window - you'll see lots of \texttt{as.something()} functions.
+
+
+\section{ R Markdown?}
+
+Markdown is formatting software used for construction of web-pages and other published documents incorporating text, tables and figures. The user creates a .Md file, which contains text, tables, figures and images with special annotations to format the document.  R Markdown is a special form of the Markdown document , which in addition accommodates 'chunks' of R code.
+
+  R Markdown allows you to present your document in the following ways:
+  
+\begin{enumerate}
+\item{The chunks can simply appear in the document as highlighted code,}
+\item{The chunks can appear highlighted in the document along with their output,} 
+\item{The chunks of code can be hidden and the output from the code presented alone,}
+\item{The chunks can be extracted from the .Rmd file to produce a new document (.R file) containing only the code.}
+\end{enumerate}
+
+R Markdown uses a package called \texttt{knitr} to manage the chunks and convert an R Markdown document (with extension .Rmd) to a standard Markdown document, which is then formatted using the standard Markdown software. This all takes place seamlessly in the RStudio interface by clicking a button.
+
+R Markdown supports easy documentation of computations so that they may be independently reproduced. This assists in collaboration with colleagues, decisionmakers, examiners and readers wanting to independently check your work. It is an excellent tool for generating \textbf{Reproducible research} and has even been used to publish a number of books using the complementary package \texttt{Rbookdown}.
+
+\section{R Markdown resources}
+
+RStudio provides an easy natural entry into the use of R Markdown with on-line support for a Quick Reference guide and 'Cheatsheets', both available from RStudio's \texttt{Help Menu}. These documents are also included in your Resources folder.
+
+For more advanced use, the author of the \texttt{knitr} package, Yihui Xie, maintains a \href{https://yihui.name/en/}{web page (blog)} and has written a book \cite{Xie2013} on \texttt{knitr}. RStudio also has a \href{http://rmarkdown.rstudio.com/}{web page} dedicated to R Markdown.
+
+
+\section{Starting an R Markdown document}\index{R Markdown!starting a document}
+
+Starting an R Markdown document is easy:
+
+\begin{enumerate}
+\item{In RStudio, \textbf{click on File-> New File-> R Markdown}. We will use the default output choice, HTML, so...}
+
+\item{\textbf{click on the OK button} in the window which has opened. Now, a 'template' of your Rmd document appears in RStudio's Edit pane.}
+
+\item{\textbf{Save} the file as Homework1.Rmd in your myCode folder.}
+
+\item{Then \textbf{set the working directory} to that folder.[Session -> Set Working Directory -> To Source File Location]}
+
+
+\item{Change the title near the beginning of the document to "R Homework 1".}
+
+\item{Make sure the author statement has your name correctly. Change it if necessary, keeping the double quotation marks around your name.}
+
+\item{Now Click [Help -> Markdown Quick Reference] and the reference will appear in the Help Pane (bottom right),}
+\item{...and if you Click [Help -> -> Cheatsheets -> Markdown Cheatsheet], you get a very nice .pdf summary. }
+
+\end{enumerate}
+
+Now you're all set to write your own code and explanations into your R Markdown document.
+
+The template contains some simple R code using one of the base R data files, and produces some simple output including a plot. The evaluated R code is shown when you generate an HTML file from this document.
+
+When you want to see what your formatted document will look like, simply \textbf{Click} the small down arrow alongside the \textbf{Knit} button on the tool bar. A menu will pop-up, offering choices of knitting to HTML, pdf or Word doc.  
+
+\textbf{Click} on the HTML choice. You will see a new window pop up, containing a preview of the HTML file. If you like what you see, you can open it in your default browser by clicking on the 'Open in Browser' button and there you can save it with a right-button-click.
+
+Try it out!
+
+\section{Editing your RMarkdown document}\index{RMarkdown!editing documents}
+
+There are essentially three main components in a RMarkdown file.  Firstly, there is the header section (called YAML), which is begun and finished with three hyphens ('dashes'). We've already edited this and won't say more about it.  The second component is your text, tables, figures images etc which includes the special Markdown character sequences to provide formatting. Thirdly, there are the R chunks which, as we have seen above can be used to insert output into the published document with or without the R code. 
+
+Formatting text is really easy. Look at the the simple management of headings, using "\#'s" to produce a heading level.  (It's the second item in the Quick reference in the Help Pane, and if you want to see what it will look like, it's on the second page, under \texttt{Pandoc's Markdown} of the RmarkdownCheatSheet.pdf file)  You'll also see, in each of these, how to use \textbf{bold fonts}, \emph{italic fonts} and super- and sub-scripts.
+
+Lists and numbered lists are also easy, the former beginning with a '*' and the latter with the number followed by a stop - for example '7.' (but without the quotation marks).
+
+Try adding a numbered list of car brands to the document - Ford, Volvo, Audi, Volkswagen.
+
+Chunks are distinguished by a sequence of 3 back-ticks, followed by an 'r' in squiggly brackets at the top of the chunk.  At the bottom of the chunk there must be three back-ticks and nothing more. The easiest way to include a new chunk is by clicking on the green Chunks button at top right of the Edit screen, when you have an Rmd file active. On clicking, a menu appears. Select the first option (R). Alternatively, pressing simultaneously, Ctl-Alt-I, will give the same result.
+
+There are a number of options for dealing with the chunks and these can be set for individual chunks within the chunk header (i.e. in the squiggly brackets). Chunks can be given a name, too. 
+
+Options can be set globally (i.e. options to be the default for all subsequent chunks) using the function \texttt{knitr::opts\_chunk\$set()}. You will see an example of this in the first chunk of your .Rmd file. Chunk options are all listed in the \href{https://www.rstudio.com/wp-content/uploads/2015/03/rmarkdown-reference.pdf}{R Markdown Reference guide} which is also in your resource folder.  Some common useful options listed in the reference guide are:
+
+\begin{itemize}
+
+\item{include = FALSE prevents code and results from appearing in the finished file. R Markdown still runs the code in the chunk, and the results can be used by other chunks.}
+\item{echo = FALSE prevents code, but not the results from appearing in the finished file.}
+\item{message = FALSE prevents messages that are generated by code from appearing in the finished file.}
+\item{warning = FALSE prevents warnings that are generated by code from appearing in the finished.}
+\item{fig.cap = "..." adds a caption to graphical results.}
+
+\end{itemize}
+
+In your new Rmd file, in the second chunk (cars) insert a comma followed by 'echo = FALSE' (without the quotes), after the 'r' in the header. It should look like this:
+
+\verb+```\{r cars, echo=FALSE\}+
+
+Now, click on the 'Knit HTML' button again and ...Voila! This time the code for this item does not appear in the HTML preview. 
+
+The various options that are available are all listed in the \textbf{R Markdown Cheat Sheet}, which you can access [Help ->  Cheatsheets -> R Markdown Cheat Sheet]. You will also see in the Cheatsheet menu item the \textbf{R Markdown reference Guide}, which is an expanded version.  These are both neat summaries of the information you need to run R Markdown.
+
+
+Now remove ', echo=FALSE' and replace 'cars' in the squiggly brackets with 'T2Kable1'. Go to the Tutorial2.R file and copy the code in the chunk headed T2Kable1 and then paste it in your .Rmd file, replacing '\texttt{summary(cars)}'. The chunk should now look like this:
+
+\begin{verbatim}
+```\{r T2Kable1\}
+library(knitr)
+kable(head(iris))
+kable(head(iris, 1))
+```
+\end{verbatim}
+
+
+
+
+You can test it either by clicking on the 'Knit button', or to test the chunk alone, put the cursor in the chunk and press Ctl-Alt-C (all three keys simultaneously). [You can use your mouse if you prefer. Select all the code in the chunk and then click on the  'Run' button.]
+
+Now to insert the next chunk, put the cursor below the T2Kable1 chunk.  Type some comments about the T2Kable1 chunk results if you wish, and then press Ctl-Alt-I. [You can use your mouse again if you prefer, click on the green 'C' button next to the 'Run' button.]
+Now paste in the next chunk from Tutorial2.R, ('T2Kable2').
+
+So, you can use this process whenever you have a chunk to include in your document.
+
+Now, let's look at placing a figure stored in a file into our document.
+Perhaps you've found a friend on the web and you would like to include his picture in your document.  Here's an example of how it's done:
+
+\verb+image: ![](../Data/friend.jpg)+
+
+You can copy this and paste it into your .Rmd document, knit it and have a look at my friend. If you don't like the look of him, find an image (.jpg) of a friend of your own on the web.  You can paste the entire web address into the parenthesis at the end of the image statement (in place of '../Data/friend.jpg').
+
+
+\section{Tidy tables using knitr}
+The default RMarkdown table notation is very clumsy. A simple alternative is to use the 
+\texttt{kable()}\index{knitr!kable()} function. Here are some examples using the base::iris data. Copy the R chunk from Tutorial2.R into a new chunk in your .Rmd document and test it.
+
+Here we are using one of the standard data sets - its a few measureents of different species of iris (a flower).
+
+Try some of the others below.
+
+<<T2Kable1, eval =FALSE>>=
+library(knitr)
+kable(head(iris))
+kable(head(iris, 1))
+@
+
+\subsection{No row names}
+
+<<T2Kable2, eval =FALSE>>=
+kable(head(iris), row.names=TRUE)
+@
+
+\subsection{At most 3 digits}
+
+<<T2Kable3, eval =FALSE>>=
+#create a 5 row datframe with variables with different distributions. 
+kable(data.frame(Rnorm = rnorm(5), Runif = runif(5), Rbeta = rbeta(5, .5, .5), RPoisson = rpois(5, 0.5))) 
+            
+@
+The function \texttt{rnorm()}\index{Core functions!rnorm()} generates random deviates. The others are what you might have guessed!
+
+\subsection{Alignment}
+
+By default, numeric columns are right-aligned, and other columns are
+left-aligned.
+
+<<T2test-d, eval =FALSE>>=
+kable(head(iris), align=c('l', 'c', 'r', 'l', 'r'))
+@
+
+

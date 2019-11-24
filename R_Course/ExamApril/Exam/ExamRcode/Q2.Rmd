@@ -1,0 +1,26 @@
+---
+title: "Q2"
+author: "Your Code"
+date: "9 April 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+# Question 2
+
+Create a file, Q2.Rmd in the examR folder, with comments, to do the following:
+
+
+1.  (3 Marks)	Use functions from the ggplot2 package with the SAGE backPain data set (from Q1), to produce boxplots of bmi against eworked, using fill in the aesthetics to distinguish men and women.                                                                                                                   
+2. (3 Marks)	Use a facet grid of (country~ depression).                                                                
+3. (3 Marks)	Selectively remove NA's.			                                                         
+4. (1 Mark) Briefly comment.   
+
+```{r FacetPlot, message=FALSE}
+library(tidyverse)
+
+```
+
+## Comment

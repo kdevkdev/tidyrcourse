@@ -1,0 +1,527 @@
+
+% ********  Template for children  ********
+
+% 1. Save as appropriate chapterName (Lecture7, Tutorial10 etc)
+% 2. Change title to above
+% 3. Change opening chunk name (Temp0) to chapter title
+% 4. Remove/replace chunk Temp1
+
+% All chunk names to be preceded by Tn or Ln  (where n is chapter or tutorial number)
+
+
+<<Lecture3, include=FALSE, eval = TRUE >>=
+library(knitr)
+library(tidyverse)
+set_parent("../tidyRcourseBook.rnw")
+warn <- FALSE
+EVAL = FALSE
+@
+
+
+\chapter{Lecture 3 - Manipulating dataframes and factors in tidyverse}\label{L3}  \index{dplyr}\index{Package!dplyr}
+
+\author{Brian Williams $<$\href{mailto:bjw649@gmail.com}%
+{bjw649@gmail.com}$>$}
+
+
+\section{Objective}
+To develop skill in preparing tables using dplyr and reporting in RMarkdown.
+
+\section{Submission}
+During this lecture and the following tutorial you should append new documentation to your R Markdown document. At the conclusion of the following tutorial you will submit your RMarkdown document to Cambro for assessment.
+
+\section{Preliminaries}
+Go to the Resources folder and open the courseCode.R file.  Find "Lecture3.R". Copy it and save it in your myRcode folder. Now in the File menu, [File-> New File -> R Markdown] delete everything in the template Markdown except the yaml at the top.  Save the file as Lecture3.Rmd in your myRcode folder.
+Now, as we use code in the class, copy it from the Lecture3.R file into a chunk in your .Rmd file [Click ctl-Alt-I to get a new chunk] -  and then you can add comments.
+
+You'll need to load the backpain data set for later in this laboratory session.
+<<L3Preliminaries1,  warning=warn, eval = EVAL , eval = EVAL >>=
+bP  <- read_csv(file="../Data/BackPain.csv")
+bP <- bP %>% mutate_if(is.character, as.factor)
+glimpse(bP)
+@
+
+\section{The packages dplyr and tidyr - the core of tidyverse}\index{dplyr}\index{tidyr}
+
+These two packages are an important component of the tidyverse. The package \texttt{dplyr}\index{Package!dplyr} was written by Hadley Wickham to try to simplify, speed-up and regularize commands and their arguments for manipulating data frames. The functions in \texttt{dplyr} operate on a dataframe (their first argument) and the output is a data frame. This allows us to 'pipe' a continuous sequence of commands with each one taking a dataframe as its first argument and passing its output (also a dataframe) to the next command in the pipe.
+Functions in \texttt{dplyr} are designed to form simple manipulations and in order to do more complicated tasks, the user constructs a sequence of function calls. This is like a 'grammar' of manipulation of data objects. The package is new (2014) and still under development but has been welcomed by the R community as a potentially unifying approach. There are many different ways of manipulating dataframes in R, with inconsistent organisation of arguments and outputs. In this course, we will focus on \texttt{dplyr}. 
+
+The  package \texttt{tidyr}\index{Package!tidyr} complements \texttt{dplyr} With functions that, in the words of Hadley Wickham, 'provides a bunch of tools to help tidy up your messy datasets'.
+
+\texttt{dplyr} contains some elementary functions which we shall see later can be used within grouped structures where they become very much more powerful. HW refers to these elementary functions as 'Single table verbs'. We will also look at some functions for combining data frames, \texttt{left()}, \texttt{bind\_rows()} and \texttt{bind\_cols()}.
+
+\section{Single table verbs}
+
+We will look at the following single table verbs:
+\begin{enumerate}
+\item{\texttt{filter()}}
+\item{\texttt{slice()}}
+\item{\texttt{arrange()}}
+\item{\texttt{select()}}
+\item{\texttt{rename()}}
+\item{\texttt{distinct()}} in Section~\ref{dplyrDistinct})
+\item{\texttt{mutate()}}
+\item{\texttt{transmutate}}
+\item{\texttt{count}}
+\item{\texttt{summarise()}} (can also be spelt \texttt{summarize()})
+\item{ We won't deal with \texttt{sample\_n()} or \texttt{sample\_frac()} - see help if you are interested in sampling from rows of your data frame. }
+\end{enumerate}
+
+Of these single table verbs, \texttt{filter}, \texttt{select} and \texttt{mutate} are the core - you will use them frequently.
+
+
+\subsection{\texttt{filter()}}\index{dplyr::filter()} 
+With \texttt{filter()} you select \textbf{rows} of a data frame. Note the double '=' signs.
+<<L3Filter,  warning=warn, eval = EVAL , eval = EVAL >>=
+bPf <- filter(bP, country == 'China' ,
+               residence == 'Rural', sex=='Female',
+              diabetes == 'yes')
+bPf
+     @
+ Soon we will want to take a closer look at the data from Ghana - so we'll use the filter to get it
+ 
+ <<L3Filter1a,  warning=warn, eval = EVAL >>=
+bPGhana <- filter(bP, country == 'Ghana' )
+     @
+ 
+ ...and of course to get rid of those pesky NA's:
+<<L3Filter2, warning=warn, eval = EVAL >>=
+bP <-  filter(bP,complete.cases(bmi,waistc,age, height))    # complete data in bmi etc
+summary(bP)
+@
+
+
+<<L3Filter2a,  warning=warn, eval = EVAL >>=
+bPg <- filter(bP, country =="Ghana") %>% 
+      select(bmi)
+sum(is.na(bPg))
+bPg %>% tally()
+@
+
+\subsection{\texttt{slice()}} \index{dplyr::slice()}
+Rows can be selected by position using \texttt{slice()}.
+
+<<L3Slice,  warning=warn, eval = EVAL >>=
+NbPsl <- slice(bP, 1:5)
+bPsl
+bPs10 <- slice(bP,seq(10,nrow(bP), by =10))  # Select every 10th observation
+@
+
+\subsection{\texttt{arrange()}}\index{dplyr::arrange()}
+The function \texttt{arrange()} is used to reorder rows.You provide a column name to control the ordering; if you want to resolve ties, add more column names. Default is ascending order. 
+
+<<L3arrange,  warning=warn, eval = EVAL >>=
+bPa <- arrange(bP,waistc)
+bPa   # default is ascending order
+@
+Descending order is done as follows:
+<<L3Descending,  warning=warn, eval = EVAL >>=
+bPa <- arrange(bP,desc(waistc))
+head(bPa[,'waistc'],20)    #   Here's the first 20 of them
+@
+
+\subsection{\texttt{select()}} \index{dplyr::select()}
+Column selection can be done using column names (always preferred) or their numerical position:
+
+<<L3SelectNames,  warning=warn, eval = EVAL >>=
+bPse <- select(bP,country, residence, sex, height, disability, diabetes)
+bPse
+kable(head(bPse))
+@
+ Here it is using a sequence of column numbers:
+
+<<L3SelectNumber,  warning=warn, eval = EVAL >>=
+bPsNum <- select(bP, 1:4)
+bPsNum
+@
+You can use the ':' between named columns, too.
+
+
+You can delete a column by selecting it with a minus sign in front of name or number:
+<<L3SelectDelete,  warning=warn, eval = EVAL >>=
+bPsNum <- select(bPsNum, -sex)
+bPsNum
+@
+or:
+<<L3DeleteNum,  warning=warn, eval = EVAL >>=
+bPsNum <- select(bPsNum, -2)
+bPsNum
+
+@
+
+\subsection{\texttt{rename()}} \index{dplyr::rename()}
+
+Renaming columns is straightforward:
+<<L3rename,  warning=warn, eval = EVAL >>=
+bPsNum <- rename(bPsNum, wealthQuantile = wealthQ)  # New name = old name
+head(bPsNum)
+
+@
+
+\subsection{\texttt{mutate()}}
+
+The function \texttt{mutate()}\index{dplyr::mutate()} adds new columns which are derived from old columns:
+<<L3Mutate,  warning=warn, eval = EVAL >>=
+bPse <- mutate(bPse, heightInches = height/2.54)
+head(bPse)
+@
+It can also be used to change the contents of an existing column.
+
+<<L3MutateInPlace,  warning=warn, eval = EVAL >>=
+bPse <- mutate(bPse, height = height/1.0)
+@
+ and in a single command it can change/add multiple columns:
+ 
+<<L3MutateMany, warning = warn, eval = EVAL>>=
+bP <- mutate(bP, heightM = height/100,
+               wHr = waistc/height,
+               sageAge = age-50)
+head(select(bP, heightM, wHr, sageAge), 10)
+@
+
+\subsection{\texttt{transmute()}}
+
+If you want to discard all of the old columns, use \texttt{transmute()}\index{dplyr::transmute()}:
+<<L3transmute,  warning=warn, eval = EVAL >>=
+bPse <-transmute(bPse, htInches = height/2.54, dis100=disability/100, country=country)
+head(bPse)
+@
+
+Note how \texttt{country} was kept and that the column order is the same as the arguments.
+
+\subsection{\texttt{count()}}
+We can easily summarise individual factors with counts of their levels using the function \texttt{count()}\index{dplyr::count()}.  Thus:
+
+<<L3count1,  warning=warn, eval = EVAL >>=
+
+count(bP,wealthQ)
+ bPcc <- count(bP,country, residence, wealthQ)     # Produces long form output
+@
+Notice that because we have not cleaned this data, there are a significant number (94) of 'blanks' in the data.
+
+\subsection{\texttt{base::summary()}}
+
+Counting multiple factors in this way is awkward because they will be presented in long form - and with multiple factors it might be very long!. There are various ways of selecting the variables of the data frame which are factors, but there are inevitably difficulties in presenting the frequency of their levels in a convenient (tabular?) fashion. The \texttt{base::summary()} function can be used after selecting only those columns which are of interest:
+<<L3count2,  warning=warn, eval = EVAL >>=
+summary(select(bP, residence, sex, wealthQ, country, agegr))
+@
+
+Selecting all factors can be done using the function \texttt{select\_if()}\index{dplyr::select\_if()}:
+<<L3count3,  warning=warn, eval = EVAL >>=
+summary(select_if(bP,is.factor))
+@
+
+
+\section{Manipulating factors with \texttt{tidyverse tools}}\index{Factors}
+
+
+Because we'll use factor variables a lot with \texttt{group\_by} in the section below, let's take a closer look now at manipulating factors (categorical variables).
+We'll begin here by selecting a factor variable from the backPain data frame - country, in which the order of the 'levels' (categories) of  the factor is not significant (nominal). 
+
+Now, let's have a look at 'country'.\index{Factors!levels}\index{Factors!structure}
+<<L2Factors1, warning=warn, eval  = EVAL >>=
+select(bP, country)  # 
+levels(bP$country)       # The levels function can't use argument select(bP, country)
+str(select(bP, country) )        #structure of cc
+head(as.numeric(cc), 20)  # print numeric values of first 20 elements
+#----------------------------------------------------------------------------------    
+@
+  Notice that R saves storage of factors by saving them as numerics and relating the numerics to the levels. 
+  
+  Often coding for levels\index{Levels} (input codes) is abbreviated (or sometimes more lengthy than we might like for display).  By default, when plotting the level names are used on the plot.  If the names are not suitable, we can then define a more suitable name for the level ( we 're-code' it) and then the new code name will be used in the plots and at the same time R will re-name the level in the dataframe. 
+  
+There is considerable confusion about the use of 'labels' with levels and \texttt{tidyverse} offers  tidier (and clearer) solutions!
+
+Basically we want to be able to do four things:
+
+\begin{enumerate}
+\item{Coerce numeric and/or character variables to factors where it is appropriate,}
+\item{Re-order to something more sensible. The default alphabetical order is often unsatisfactory for presentation purposes, either in a table or a plot. Use \texttt{fct\_relevel}.}
+\item{Re-name unnecessarily terse, long or meaningless names. Use \texttt{fct\_recode}}
+\item{Cut a numeric variable into named groups to create a new factor variable. Use one of:}
+\begin{itemize}
+\item{\texttt{cut\_interval} which makes n groups with equal range,} 
+\item{\texttt{cut\_number} which makes n groups each with approximately equal numbers of observations or}
+\item{\texttt{cut\_width}, which makes groups with a specified 'bin width'}
+\end{itemize}
+\end{enumerate}
+
+You can see examples of the cut functions \href{https://ggplot2.tidyverse.org/reference/cut_interval.html#examples}{here}.
+ 
+\subsection{Coercing numeric and character variables to a factor}
+
+Here is how to coerce a simple numeric variable. (In this case \texttt{comorb} is coded as the number of comorbidities, 0, 1, 2 - where 2 may be 2 or more.)
+
+<<L3Mutate2factor0, warning=warn, eval  = EVAL>>=
+bP %>% select(comorb)
+bP <- bP %>% mutate(comorb=as.factor(comorb))
+bP %>% select(comorb)
+@
+
+To change the codes of the factors, to give us meaningful labels for presentation, we use \texttt{fct\_recode}:
+
+<<L3MutateRecode, eval  = EVAL>>=
+bP <- bP %>% mutate(comorb = fct_recode(comorb, 
+                                        "None" = "0",
+                                        "One" = "1",
+                                        "Two or more", "2"))
+bP %>% select(comorb)
+@
+\subsubsection{NOTES:}
+\begin{itemize}
+\item{Here we have chosen to recode (rename) all the levels, but we could have re-named only one.}
+\item{The recoding definition in the \texttt{fct\_recode} function is "new name" = "old name" }
+\end{itemize}
+
+We have already seen the 'blanket' conversion of all character variables in a dataframe to factors:
+
+\begin{verbatim}
+bP <- mutate_if(bP, is.character, as.factor)
+\end{verbatim}
+
+We note that this should be done with care, because there will certainly be times when converion of character variables to factors is inappropriate - for which reason, the tidyverse dataframe functions do not automatically convert character variables to factors, which is the default in older R functions.
+
+\subsection{ Re-ordering factor levels}
+To re-order, you must specify the levels in your desired order as the arguments of fct\_relevel following the variable name.  The spelling must be exactly as in the original!
+
+<<L3FActors1,  warning=warn, eval = EVAL>>=
+levels(bP$bmi4)
+ bP <- bP %>%  mutate(bmi4 = fct_relevel(bmi4, "Underweight","Normal", "Pre-Obese", "Obese"))
+ levels(bP$bmi4)
+@
+
+A mis-spelling results in alphabetical order of the original levels.
+
+\subsection{ Re-coding (renaming) categories(levels) in factors}
+
+If you simply want to change the coding of individual levels, this is easily done with \texttt{fct\_recode}.  Here is the call to reduce the length of the Russian Federation code (and we can deal with South Africa at the same time):
+
+
+<<L3Factors3, warning=warn, eval  = EVAL >>= 
+  ## Nominal factors - assigning Labels
+bP %>% count(country) 
+bP <- bP %>% 
+  mutate(country = fct_recode(country,
+                              "Russian Fed" = "Russian Federation",
+                              "Sth Africa" = "South Africa") )
+bP %>% count(country)
+@
+  If you look back at the preceding script you will see that there we had the level name 'Russian Federation'.  We've changed the associated level name to 'Russian Fedn'.  
+ 
+\subsection{ Converting numerics to factors using the \texttt{cut()} functions}\index{Factors!convert numerics to factors}
+
+The function \texttt{cut()}\index{Core functions!cut()} provides a quick  way of converting numeric data to grouped factors. The \texttt{forcats} package in \texttt{tidyverse} simplifies and extends these calls a little.
+
+Here's how to create 6 levels with approximately the same number of observations in each group:
+
+<<L2cut, warning=warn, eval  = EVAL >>=
+bP <- bP %>% mutate(height6 =  cut_number(height, 
+              n = 6, 
+              labels = c("Very Short", "Short",
+              "Average", "Tall", "Very Tall", "Extremely Tall")))
+summary(bP$height6)
+@
+
+We use \texttt{cut\_interval} to cut with approximately equal ranges:
+<<L3Height4cutInterval,  warning=warn, eval = EVAL>>=
+
+bP <- bP %>% mutate(height4 = cut_interval(height, n=4))  #,
+summary(bP$height4)
+
+bP <- bP %>% mutate(height4 = cut_interval(height, n=4, 
+                                labels = c("Very Short", "Short", "Average", "Tall" )))
+bP %>% count(height4)  
+
+
+@
+.... and \texttt{cut\_width} let's you choose the range (but there seems to be some minor problems with it.)
+<<L3cutwidth,  warning=warn, eval = EVAL>>=
+bP <- bP %>% mutate(height4 = cut_width(height, width = 15))  #,
+summary(bP$height4)
+
+bP <- bP %>% mutate(height4 = cut_interval(height, n=4, 
+                                labels = c("Very Short", "Short", "Average", "Tall" )))
+bP %>% count(height4)  
+
+@
+
+The ranges chosen here seem to be inconsistent??
+
+If you want to choose your own breaks, you must revert to the base function \texttt{cut}:
+
+<<Lecture3BreaksCut,  warning=warn, eval = EVAL>>=
+
+bP <- bP %>% mutate(height4 = cut(height, breaks = c(0,120,150,170,Inf)))
+summary(bP$height4)
+# Adding nice names is easiest all in one command this way:
+bP <- bP %>% mutate(height4 = cut(height, breaks = c(0,120,150,170,Inf),
+                  labels = c("Very Short", "Short", "Average", "Tall" )))
+summary(bP$height4)   
+@
+
+
+
+..and finally, here's how to combine levels.  Simply recode grouped levels to the same name:
+
+
+<<L2CombiningLevels, warning=warn, eval  = EVAL >>=
+summary(bP$height6)
+bP <- bP %>%  mutate(h6_to_4 = fct_recode(height6,
+                                          "short" = "Very Short",
+                                          "short" = "Short",
+                                          "very tall" = "Very Tall",
+                                          "very tall" = "Extremely Tall"))
+
+summary(bP$h6_to_4)
+@
+
+The package \texttt{forcats} is also very useful for dealing wth factors. See Chapter 15 of  \href{https://r4ds.had.co.nz/tidy-data.html}{'R for data science'}\cite{Wickham2017} for detailed examples and extensions on the use of the functions we have seen here.
+
+%\printindex
+
+
+\section{\texttt{group\_by()}}\index{dplyr!grouped operations}\index{dplyr::groupby()}
+
+The \texttt{summarise()} function and those we have discussed above, become much more powerful when we use grouping operations with the verb/function \texttt{group\_by()}.
+
+The other verbs are affected by grouping as follows:
+\begin{itemize}
+\item {Grouped \texttt{select()} is the same as ungrouped select(), excepted that grouping variables are always retained.}
+
+\item {Grouped \texttt{arrange()}\index{dplyr::arrange()} orders first by grouping variables}
+
+\item {The \texttt{slice()}\index{dplyr::slice()} function extracts rows within each group.}
+
+\item {The \texttt{count()}\index{dplyr::count()} function counts the number of rows with each unique value of variable, so it is  particularly useful for counting the frequency of levels in factors.}
+
+\item {The \texttt{summarise()}\index{dplyr::summarise()} function is particularly useful when applied to grouped variables, and is explained in detail below.}
+
+\item {The function \texttt{n()}\index{dplyr::n()} (takes no arguments) determines the number of observations in a group.}
+
+\end{itemize}
+
+\subsection{Summarising groups}\index{dplyr!summarising groups}
+In summarising groups we can add columns containing the statistics (mean, sd, max, IQR etc)
+for every group combination of the set specified. In our bP data, we group using factor variables.
+\index{dplyr!piping}
+Because we will now chain \texttt{dplyr} commands together, it becomes convenient to introduce the 'piping' operator, \%>\%. When we place the piping operator after a data frame or a \texttt{dplyr} command, the data frame or the output data frame from the command is passed to the first argument of the command after the piping operator. Another piping operator can be placed after the second \texttt{dplyr} function, passing the output data frame from the second function to the first argument of the third function and so on.  It will become clearer with examples, below.
+
+\index{dplyr::group\_by()}
+
+<<L3dplyr::summarise,  warning=warn, eval = EVAL >>=
+library(knitr)
+crs1 <- group_by(bP,country,residence, sex)
+bySex <- summarise(crs1, meanDisability = mean(disability), sdDisability=sd(disability))
+  bySex
+kable(bySex)
+@
+
+Here's a similar example using the piping operator, \%>\%.
+\begin{itemize}
+
+\item{It begins, by assigning the (not-yet-computed) result of the chained operations to the new data frame crs2.}
+
+\item{The data frame bP is the first input to the chain, where initially it is passed to the first function, \texttt{group\_by()} which forms a data frame in which bP is grouped by country, residence and sex.}
+
+\item{This grouped data frame is then passed to the summarise command which forms a data frame of all combinations of the groups for which means and IQR's of disability are presented.}
+
+\item{Finally, the resulting data frame is assigned to crs2.}
+\end{itemize}
+
+<<L3Piping1,  warning=warn, eval = EVAL >>=
+crs2 <- bP %>%
+  group_by(country,residence, sex) %>%
+  summarise(Disability = mean(disability), IQR = IQR(disability))
+crs2
+@
+
+Here's a further example in which we add statistics for another variable.
+<<L3Piping2,  warning=warn, eval = EVAL >>=
+crs2 <- bP %>%
+  group_by(country,residence, sex) %>%
+  summarise(Disability = mean(disability), disIQR = IQR(disability), Bmi = mean(bmi))
+crs2
+@
+
+Its easy to add in another grouping variable:
+<<L3Piping3,  warning=warn, eval = EVAL >>=
+crs2 <- bP %>%
+  group_by(country,residence, sex, angina) %>%
+  summarise(Disability = mean(disability), disIQR = IQR(disability), Bmi = mean(bmi))
+crs2
+@
+
+
+Or we may want to change the order in the table:
+<<L3Piping4,  warning=warn, eval = EVAL >>=
+crs2 <- bP %>%
+  group_by(angina, country,residence, sex) %>%
+  summarise(Disability = mean(disability), disIQR = IQR(disability), Bmi = mean(bmi))
+crs2
+@
+
+
+..or filter to look at only one country:
+<<L3pipe5,  warning=warn, eval = EVAL >>=
+crs2 <- bP %>%
+  filter(country== "China")%>%
+  group_by(angina, residence, sex) %>%
+  summarise(Disability = mean(disability), disIQR = IQR(disability), Bmi = mean(bmi))
+crs2
+
+@
+
+When groups vary significantly in size it is prudent to always include  counts of observations:
+<<L3observation_counts1,  warning=warn, eval = EVAL >>=
+aa <- group_by(bP, country, sex, residence, wealthQ) %>% 
+  summarise( count=n(), mdis=mean(disability))
+aa
+@
+
+
+\section{Save a tidied form of the dataframe bP}
+
+Let's save our tidied up form of the dataframe for subsequent use.  We'l leave the NA's there, because we know we can do much better generally with \texttt{complete.cases()}.  We'll just set up the factor levels tidily and add the waist-height ratio as \texttt{wHR} and we'll also convert the comorbidity variable to a factor (it was read as a numeric). Underneath it, you'll see a complex bit of code that creates a function we'll use later.  (Don't worry about the code - it's very advanced!)
+
+Notice that the final line saves \texttt{bP} and the function \texttt{count\_to\_pct}.  When the saved file is re-loaded, both become available in the Environment.
+
+<<L3SavedfbP,  warning=warn , eval = EVAL >>=
+bP  <- read_csv(file="../Data/BackPain.csv")%>% 
+        mutate_if(is.character, as.factor) %>% 
+        mutate(bmi4  = fct_relevel(bmi4, "Underweight","Normal", "Pre-Obese", "Obese"),
+            physical = fct_relevel(physical,
+                                    "low phys act", "mod phys act", "high phys act"),
+            works    = fct_relevel(workS, 
+                        "never worked", "currently not working", "currently working" ),
+            eduS     = fct_relevel(eduS, 
+                       "No primary", "Compl Primary", "Compl Sec/HS", "Compl Uni/Coll"), 
+            alcohol  = fct_recode(alcohol, "Abstainers",
+                              "Drinkers" ="Non-heavy/Infreq heavy/Freq heavy drinkers" ), 
+            country  = fct_recode(country, 'Russian Fedn.' = 'Russian Federation', 
+                                              'Sth Africa' = 'South Africa'),
+            comorb   = as.factor(comorb), 
+            comorb   = fct_recode(comorb, 'None' = '0',  
+                                          'One'  = '1',
+                                          'Two+' = '2'),
+            wHR      = waistc/height)
+
+count_to_pct <- function(data, ..., col = n) {
+    grouping_vars_expr <- quos(...)
+    col_expr <- enquo(col)
+    data %>%
+        group_by(!!! grouping_vars_expr) %>%
+        mutate(pct = (!! col_expr) / sum(!! col_expr)) %>%
+        mutate(pct = 100*pct) %>% 
+        ungroup()
+}
+
+save(bP, count_to_pct, file="../Data/BackPain.RData")
+@
+
+In all our future classes, we can simply invoke the command below and \texttt{bP} will be instantly added to our Environment, cleaned up as above..
+
+<<L3LoadbP, eval = FALSE, eval = EVAL >>=
+load("../Data/BackPain.RData")
+@
+
+%\printindex

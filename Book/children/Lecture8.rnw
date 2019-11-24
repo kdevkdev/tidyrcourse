@@ -1,0 +1,213 @@
+
+% ********  Template for children  ********
+
+% 1. Save as appropriate chapterName (Lecture7, Tutorial10 etc)
+% 2. Change title to above
+% 3. Change opening chunk name (Temp0) to chapter title
+% 4. Remove/replace chunk Temp1
+
+% All chunk names to be preceded by Tn or Ln  (where n is chapter or tutorial number)
+
+
+
+<<Lecture8, include=FALSE>>=   
+set_parent("../tidyRcourseBook.rnw")
+warn <- FALSE
+EVAL = FALSE
+@
+
+
+\chapter{Lecture 8 - Anova and Regression diagnostics }\index{Regression!Anova}\index{Regression!diagnostics}
+
+\author{Brian Williams $<$\href{mailto:bjw649@gmail.com}%
+{bjw649@gmail.com}$>$}
+
+
+\section{Preliminaries}
+Install the \texttt{car} package\index{Package!car}. This is a very useful package written by John Fox. The name is from the title of his book "An R companion to applied regression". 
+
+
+Load bP if you've not done so already, and go to the courseCode folder and open the Lecture8.R file.  Save as - to the myRcode folder.  Set the working directory to that of the source file.
+
+<<L8load1, eval = EVAL >>=
+# Initial read of back pain data set 
+load("../Data/Backpain.Rdata")
+@
+
+@
+
+\section{ANOVA}
+We'll continue with some of the models we set up in the last Lecture.  Let's begin by setting them up again.
+
+<<L8LM1, warning=warn , eval = EVAL >>=
+RegModel.1 <- lm(disability~age+bmi, data=bP)
+RegModel.1
+@
+
+
+<<L8LM3, warning=warn  , eval = EVAL >>=
+LinearModel.3 <- lm(disability ~ age + bmi + eduS + physical + residence + 
+  wealthQ + comorb + country, data=bP, subset = sex == "Male")
+summary(LinearModel.3)
+@
+
+
+ANOVA analysis is applied directly to \texttt{lm()} objects. Have a look at the structure of these objects. They contain \emph{lots} of information about your model which can be used for analysing and presenting the outcomes of your regression in many ways.
+
+<<L8lmObjects, warning=warn , eval = EVAL >>=
+str(LinearModel.3)
+@
+
+Here's the one-way ANOVA as presented by the core function \texttt{stats::anova}.
+
+<<L8LM1anova, warning=warn , eval = EVAL >>=
+anova(RegModel.1)
+@
+
+And here's John Fox's version, \texttt{Anova()},\index{car::Anova()} from the \texttt{car} package.
+
+<< L8Anova1, warning = warn, eval = EVAL >>=
+library(car)
+Anova(LinearModel.3, type="II")
+@
+
+Have a look at the documentation of the \texttt{car} version by typing \texttt{help(Anova)} or \texttt{?Anova} in the Console pane.
+
+\subsection{Compare two models}
+
+If we have two \texttt{lm()} objects, we can use the base R function \texttt{anova()}, from the \texttt{stats} package. It's different to \texttt{Anova()}.  Check it out: \texttt{?anova}.
+
+Firstly, we run a version of LinearModel.3 without the country variable.
+
+<<L8LM5a, warning = warn, eval = EVAL >>=
+LinearModel.5 <- lm(disability ~ age + bmi + eduS + physical + residence + 
+  wealthQ + comorb, data = bP, subset  = sex == "Male")
+summary(LinearModel.5)
+@
+
+Now do the comparison:
+
+<<L8anova2, warning = warn , eval = EVAL >>=
+anova(LinearModel.3, LinearModel.5)
+@
+
+ 
+
+\section{Model diagnostics: checking assumptions}
+
+\subsection{Subset the data}\index{Subset!data frame}
+
+Just to keep things a little more convenient for the diagnostic analysis, we'll take a country sub-set.
+In the previous lecture, we sub-setted the China data - so we'll simply usethe same code  here:\index{dplyr::filter()}\index{dplyr::select()}\index{tidyr::drop\_na()}
+
+<<L8subset1, warning = warn, eval = EVAL >>=
+China <- filter(bP,  country == "China")%>%
+         select( -country)%>%
+         drop_na()
+China
+@
+
+Now fit a model to the China data.
+
+<<L8modelSubset2, warning = warn, eval = EVAL >>=
+LinearModel.1 <- lm(  bmi  ~ age + sex + residence + wealthQ + wHR,
+                    data = China)
+summary(LinearModel.1)
+@
+The function \texttt{lm()} also has provision for sub-setting a dataframe in its arguments.
+
+\subsection{Add the observation statistics}\index{Observations!adding}
+Its easier to do the diagnostic checking if you add the observation statistics to the data frame.
+
+<<L8resid1, warning = warn, eval = EVAL >>=
+library(car)
+fitsLM1 <- fitted(LinearModel.1)
+residLM1  <- residuals(LinearModel.1)
+df <- data.frame(fitsLM1,residLM1)
+China<- bind_cols(China, df)
+ head(as.data.frame(China))
+@
+ 
+ The fitted values \index{Core functions!fitted()} and the residuals\index{Core functions!residuals()} \index{Residuals!plotting} are added to the China data frame using the \texttt{dplyr} function \texttt{bind\_cols()}.\index{dplyr::bind\_cols()}
+
+\subsection{Normal probability plots}\index{Normal probability plots}
+We'd like to know that our residuals are normally distributed, because otherwise we can't be sure of the quality of our fitting process (which may in a non-normal case weight outliers too heavily), but perhaps more importantly many common tests of regression results \emph{assume} normality. So if the residuals are not normal, then you cannot reliably perform many of the basic hypothesis tests.
+
+<<L8qqplot, warning = warn, eval = EVAL >>=
+  
+ p <- China %>% ggplot(aes(sample=residLM1))
+p <- p + stat_qq() + stat_qq_line()
+p
+@
+Ouch! Does not appear to be normally distributed!
+
+\subsection{Scatter plot of fitted bmi vs observed bmi}
+
+If we do a scatter plot of fitted  bmi vs observations, we'll see clearly how the distortion in the qqplot has come about.
+
+<<L8Scatterplot, warning = warn, eval = EVAL >>=
+ggplot(China) + geom_point(aes(x = bmi, y = bmi), colour = "red") + geom_point(aes(x = bmi, y = fitsLM1), colour = "dark green", alpha = 0.1) 
+@
+
+The red dots are the observed bmi plotted against itself.  The green dots are the fitted bmi against the observations.
+
+\subsection{Scatter plot of fitted values and residuals}
+
+<<L8scatter1, warning = warn , eval = EVAL >>=
+
+p <- ggplot(China, aes(x=fitsLM1, y = residLM1)) + geom_point(alpha = 0.1, colour = "brown")
+p
+
+@
+
+It looks like the variance might be increasing (heteroscedastic). 
+
+John Fox has spent some time preparing a scatterplot wth rolling sd.
+
+
+<<L8Foxhetero, warning = warn, eval = EVAL >>=
+library(car)
+China %>% scatterplot(residLM1~fitsLM1, reg.line = lm, smooth = TRUE, spread =TRUE,
+            id.method = 'mahal, id.n = 2', span = 0.5, data = .)
+
+@
+
+
+
+The function \texttt{scatterplot}\index{car::scatterplot()} is also from the package \texttt{car}. Its description from the documentation page (\texttt{?scatterplot}) is: 
+\begin{quote}
+"Makes enhanced scatter plots, with box plots in the margins, a non-parametric regression smooth, smoothed conditional spread, outlier identification, and a regression line; sp is an abbreviation for scatter plot."
+\end{quote}
+This plot is particularly useful for checking heteroscedasticity\index{heteroscedasticity} .  We can see that there are problems with this one!
+
+\subsection{Histogram of residuals}
+
+<<L8residHist, warning = warn, eval = EVAL >>=
+p <- ggplot(China, aes(x=residLM1)) +geom_histogram(binwidth = 0.5, colour = "brown", fill = "beige" )
+p
+@
+
+
+
+\subsection{Variance-inflation factors}
+
+ The \texttt{car} function \texttt{vif}\index{car::vif()} computes variance inflation functions for linear models and GLM's.
+<<L8vif1, warning = warn , eval = EVAL >>=
+vif(LinearModel.1)
+@
+
+<<L8qqplot2, warning = warn, eval = EVAL >>=
+car::qqPlot(LinearModel.1, simulate=TRUE, id.method="y", id.n=2)
+@
+
+\subsection{base::plot of an \texttt{lm} object}
+
+Finally, we can simply plot an \texttt{lm} object and get a sequence of standard diagnostic plots, similar to those we have just seen.
+The last of them plots the Cook's distance and leverage, giving indications of the observations which have most affected the regression - and perhaps should be considered as outliers?
+
+<<L8plotlm,warning = warn, eval = EVAL >>=
+plot(LinearModel.1)
+@
+
+
+%\printindex

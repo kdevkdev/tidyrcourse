@@ -1,0 +1,292 @@
+
+% ********  Template for children  ********
+
+% 1. Save as appropriate chapterName (Lecture7, Tutorial10 etc)
+% 2. Change title to above
+% 3. Change opening chunk name (Temp0) to chapter title
+% 4. Remove/replace chunk Temp1
+
+% All chunk names to be preceded by Tn or Ln  (where n is chapter or tutorial number)
+% All chunks set eval=evalChild
+
+
+<<Appendix1, include=FALSE>>=   
+set_parent("../tidyRcourseBook.rnw")
+warn = FALSE
+EVAL <- FALSE
+@
+
+
+
+\chapter{Appendix - miscellaneous extra information}\label{Appendix}
+
+
+\author{Brian Williams $<$\href{mailto:bjw649@gmail.com}%
+{bjw649@gmail.com}$>$}
+
+
+
+\section{Relative paths to data files - Lecture 1}\label{DataStructure}
+
+Consider the structure we have in the R\_Course folder.  It corresponds to the structure shown in Figure~\ref{fig:pch}. 
+
+Assume we are working with Lecture1.R in the myRCode folder and we have set the working directory to the myRcode folder.  
+
+Then to find a data file called myData.csv in the Data folder, we can simply find Lecture1.R's parent (the R\_Course folder), and then go to the Data folder (which is also in the R\_Course folder) and find the data file there. 
+
+The relative path (from Lecture1.R to a data file called myData.csv in the Data folder is then "../Data/myData.csv". The 'two-dots' notation takes us to the parent of the current working directory (R\_Course folder)
+
+The absolute paths to the files \emph{could} be included in the code but DON'T DO IT!  It is virtually impossible to use the absolute form if the file is to be accessed by people using different computers, because everybody's absolute  path would be different, depending on where they unpacked their zip file with the Course materials.
+
+If the data file is shared from the web - then a single URL works, but we don't want a classroom of people all accessing a large file at one time!
+
+
+
+\begin{figure}[!ht]
+\graphicspath{{./Images/}}
+\includegraphics[width=6cm, height = 8cm]{dataFolder2.png}
+\caption{Using a common data folder.}
+\label{fig:pch}
+\end{figure}
+
+
+
+
+\section{Built-in mathematical functions}\index{Functions!built-in, mathematical}
+R provides all of the standard mathematical functions that we are familiar with from spreadsheets, calculators etc. 
+<<AppmathFuncs, eval = EVAL>>=
+## Standard mathematical functions in R.
+
+2 + 4 * 5      # Note usual order of operations (multiply has precedence)
+log (10)       # Natural logarithm with base e=2.7182
+log10(1000)      # Common logarithm with base 10
+5^3.1             # 5 raised to the  power 3.1
+5/8             # Division
+8%%5            # Remainder of division
+sqrt (20.25)      # Square root
+abs (3-7)     # Absolute value 
+pi                # 3.14
+exp(2)         # Exponential function i.e raising 2.7182 to power 2.
+round(pi,4)  # Round pi to 4 decimal places
+floor(15.9)   # Forces rounding down
+ceiling(15.1)  # Forces rounding up 
+cos(pi/3)        # Cosine Function
+sin(pi/2)        # Sine Function
+tan(pi/4)       # Tangent Function
+acos(0.5)/pi        # Inverse Cosine
+asin(0.5)/pi*180.       # Inverse Sine
+atan(0.5)/pi*180.      # Inverse Tangent
+
+@
+
+
+\section{Probability distributions}
+R contains many functions for generating probability distribution data. The function names are organised consistently so that, for example, the density, distribution function, quantile function and random generation for the normal distribution are respectively \texttt{dnorm(), pnorm(), qnorm()} and \texttt{rnorm}.\index{Core functions!dnorm()} \index{Core functions!rnorm()}\index{Core functions!pnorm()}\index{Core functions!qnorm()}for the uniform distribution we would see similarly, \texttt{dunif(), punif(), qunif()} and \texttt{runif}. To see other available distributions in the Core \texttt{stats} package\index{Package!stats}:\index{Package!stats}
+
+<<AppProbDist1, eval = EVAL>>=
+help(Distributions)
+@
+
+Let's have a very quick look at how these functions are used.
+Plot the densities:
+<<AppProbDist2, eval = EVAL>>=
+x <- seq(from= -3, to = 3, by = 0.1)
+y <- dnorm(x) 
+x2 <- seq(-3,3,.2)
+y2 <- dunif(x2,-3,3)
+plot(x,y, type = "l", main = "Probability density functions")
+points(x2,y2, pch = 16)
+@
+
+Plot the cumulative distribution functions
+
+<<AppProbDist3, eval = EVAL>>=
+y <- pnorm(x)
+plot(x,y, type = "l", main = "Cumulative distribution functions")
+x2 <- seq(-3,3,.2)
+y2 <- punif(x2,-3,3)
+points(x2,y2, pch = 16)
+
+@
+
+Plot the quantile functions
+
+<<AppProbDist4, eval = EVAL>>=
+x <- seq(0,0.99,0.02)
+y <- qnorm(x)
+plot(x,y, type = "l", main = "Quantile functions")
+y2 <- qunif(x)
+points(x,y2, pch = 16)
+
+@
+
+Plot the sampling functions
+
+<<AppProbDist5, eval = EVAL>>=
+x <- rnorm(100000)
+hist(x, breaks = 30, main = "Histogram of 100000 samples using rnorm()")
+x1 <- seq(0,1,1/10000)
+x2 <- runif(10001)
+plot(x1,x2, main = "Scatterplot of 10001 samples from runif")  # Is it really random?
+@
+
+
+
+\subsection*{Operators}\index{Operators}
+
+In the segment of code above, we saw that two variables could have their values added by using the usual '+' symbol.  As you might expect, R offers a number of symbols to perform such basic functions.  Table~\ref{Operators}, below is the list of operators found in the \href{https://cran.r-project.org/doc/manuals/r-release/R-lang.html#Operators}{Language Reference Manual}.
+
+\begin{table}[!ht]
+\begin{tabular}{|r|l|}
+\hline
+- &	Minus, can be unary or binary\\
++ &	Plus, can be unary or binary\\
+! & Unary not\\
+\verb+~+ & Tilde, used for model formulae\\
+? &	Help\\
+: &	Sequence, binary (in model formulae: interaction)\\
+\verb+*+ &	Multiplication, binary\\
+/ &	Division, binary\\
+\verb+^+ &	Exponentiation, binary\\
+\verb+%x%+ &	Special binary operators, x is any valid name\\
+\verb+%%+ &	Modulus, binary\\
+\verb+%/%+ &	Integer divide, binary\\
+\verb+%*%+ &	Matrix product, binary\\
+\verb+%o%+ &	Outer product, binary\\
+\verb+%x%+ &	Kronecker product, binary\\
+\verb+%in%+ &	Matching operator for sets, binary \\
+< &	Less than, binary\\
+> &	Greater than, binary\\
+== &	Equal to, binary\\
+>= &	Greater than or equal to, binary\\
+<= &	Less than or equal to, binary\\
+\verb+&+ & And, binary, vectorized\\
+\verb+&&+ &	And, binary, not vectorized\\
+|	& Or, binary, vectorized\\
+|| & 	Or, binary, not vectorized\\
+<- & 	Left assignment, binary\\
+-> & 	Right assignment, binary\\
+\verb+$+ & List subset, binary\\
+\hline
+
+\end{tabular}
+ \caption{Standard operators in R}
+ \label{Operators}
+\end{table}
+
+You can access a table like this easily by typing '?Syntax' (without the quotation marks) in the Console pane. The table will appear in the Help Pane (bottom right)
+
+\subsection*{Constants}\index{Constants}
+
+There are 5 types of constants, namely: logical, integer, numeric, complex, string.
+
+In addition there are 4 special constants (which were mentioned above in the 'reserved words'.) The special constants are:
+\begin{itemize}
+\item{\texttt{NULL} (an object without an assigned value),}\index{Constants!NULL}\index{NULL}
+\item{\texttt{NA} (a variable or object with a 'missing' value),}\index{Constants!NA}\index{NA}
+\item{\texttt{Inf} (a number whose absolute value is too large for numeric representation - typically resulting from a division by zero),}\index{Inf},\index{Constants!Inf}
+\item{\texttt{NaN} ('not a number' - resulting from a division of zero by zero).}\index{Constants!NaN}\index{NaN}
+\end{itemize}
+
+Real numeric constants are represented in the usual way:
+
+1.3e7, 1., 1.3, 0.6, .3, 6.3e-4, 16
+
+All of these result in a numeric constant whose type is \texttt{double}.
+
+To assign an numeric constant value of integer type, rather than a numeric, the letter 'L' is added at the end of the integer value. For example, 178L.
+
+String constants\index{String!constants} (sequences of characters, such as a name 'Fred') are delimited either by a pair of single quotes (') or double quotes("). If you need to include one of the pair in the string, it should be preceded by a backslash(\textbackslash). Alternatively, a single quote can be embedded in a string delimited by double quotes and vice-versa. For example we can assign:
+
+
+<<AppString1, eval = EVAL>>=
+
+stringA <- "the string Henry's"
+stringA
+stringB <- 'the string George\'s'
+stringB
+@
+
+There are a number of other special characters which need to be preceded by a backslash ("escaped").  You'll find these in the \href{https://cran.r-project.org/doc/manuals/r-release/R-lang.html#Literal-constants}{Language Reference Manual}.
+
+
+\begin{itemize}
+\item{\texttt{summary()}\index{Core functions!summary()} provides a useful summary of the variables in the data frame (as shown). It computes means, sd, max, min, quartiles of numeric data and for factors (categorical vairables) it provides counts of each category}
+ we have already seen the \item{\texttt{str()} function which lists the structure of an object. NOTE that the \texttt{str()} command for space-saving purposes, lists  variables row-by-row, though the data frame actually has them stored as columns. This data frame has many variables which are factors. }
+ \item{\texttt{head()}\index{Core functions!head()} shows the first 6 rows (records or cases) of a data frame.}
+\end{itemize}
+
+
+
+
+
+
+\section{Further reading}
+The following are useful references for learning R. The first three are already a little dated, but still contain much useful intrductory information.
+
+Zuur, Ieno et al.\cite{Zuur2009a} uses mostly simple ecological examples with small datasets. It has a strong focus on assembling and manipulating these datasets.
+
+Adler's Nutshell book\cite{Adler2010} contains a wealth of information including parameters used with standard plots and an introduction to the Bioconductor package (which we will discuss later in the course). (There is a new edition which includes material on accessing and analysing web data.)
+
+Dalgaard \cite{Dalgaard2008} contains more basic statistical material, but has a concise well-written introduction to R and a nice compendium of functions.
+
+The books by Kabacoff \cite{Kabacoff2014} (I like this one) and Lander \cite{Lander2014} are more advanced and more recent and cover topics like ggplot2 and creating reports in Word directly from R.
+
+Wickham's book \cite{Wickham2009} on ggplot2 is the standard reference for that material and now there is a second edition. The book by Chang \cite{Chang2012}, provides many more examples and may be an easier starting point.
+
+Crawley's book (\cite{Crawley2012}is a 1000+ page blockbuster.  I have only read the first edition, which had much information, but some of the organization and indexing of subject matter was a little poor.
+
+Wickham's latest books \cite{Wickham2015a, Wickham2015b} are more advanced.  The first cited gives much detail of the underlying properties of R objects and the second provides clear guidelines on how to produce your own R package. 
+
+Munzert et al \cite{Munzert2015} provide a very accessible entry to big data analytics using R packages. Nolan and Temple Lang \cite{Nolan2014} take an in-depth look at R packages for accessing XML and other web technologies. Both these books provide a broad basic background for accessing data from the web, prior to its analysis. Entry-level analysis of 'big data' is now available in many texts, a number of which use R packages for the purpose. A few examples are: Lantz (2013) \cite{Lantz2013}, Forte (2015)\cite{Forte2015} and \cite{Silge2017}. More advanced material with R code can be found in James et al \cite{James2013} and Torgo (2011)\cite{Torgo2011}. And without R code, Bishop's book \cite{Bishop2006} is a very wide-ranging coverage of machine learning.
+
+For reproducible research the book by Xie \cite{Xie2013} describes 'knitr', the software used to create documents containing code and Gandrud's book\cite{Gandrud2013} provides a nice wide-ranging discussion of the various other software and packages which aid production of documents containing reproducible research. A newer book by Xie  \cite{Xie2017} describes the use of the bookdown package which supports creation of technical documents and books.
+
+If you are interested in Event History Analysis, Göran Broström\cite{Brostrom2012} here at Umeå University has written a book on that topic using R.  For related material on survival analysis, Mills' book \cite{Mills2011} comes well recommended (though I have not seen it myself).
+
+Bivand's book\cite{Bivand2008} is the classic for spatial presentation and analysis in R (and there is a new edition), while Dorman\cite{Dorman2014} offers a gentler introduction.
+H{\o}jsgaard et al's book\cite{Hojsgaard2012} is a thorough introduction to graphical models (including Bayesian networks) and Nagarajan et al\cite{Nagarajan2013} describe some of the newer methods. Gondro \cite{Gondro2015} introduces R packages used for genomic analysis.
+
+The CRAN website http://www.r-project.org/ has a link to 'Manuals' where there is a free document called 'An introduction to R'. The website also has an extensive (144 in March, 2014) list of books on R. Browsing the web will also uncover many teaching aids and introductory courses.
+
+Finally, and certainly not least are two recent books which have heavily influenced the presentation in these notes. Wickham and Grolemund's 'R for data science'\cite{Wickham2017}, focusses exclusively on rectangular data - dataframes - and since that is by far the form of data of most interest to public health scentists, it provides an excellent basis for using R without the steep learning curve.
+Mailund's book \cite{Mailund2017} complements this book with somewhat more advanced material, but with a very similar philosophy.
+
+\subsection{Exercises}
+\begin{enumerate}
+
+\item Use \texttt{sample()} to estimate the frequency of a 1 arising from 1 million throws of a dye. 
+Use \texttt{runif()} in the range 0-6. What fraction of the data are in the range 0-1
+
+\item Create a sample of 1000000 taken from a N(0,1) distribution.
+Compute the fraction of your deviates that are less than 2. Compare with the \texttt{pnorm()} result.
+\end{enumerate}
+
+
+There are some more nice examples at \href{https://nsaunders.wordpress.com/2010/08/20/a-brief-introduction-to-apply-in-r/}{https://nsaunders.wordpress.com/2010/08/20/a-brief-introduction-to-apply-in-r/}
+
+\section{Exercise}
+
+Here is a little function (very slightly modified) from Kabacoff's book\cite{Kabacoff2015}.
+Try selecting some numerical variables from the backPain data set and passing them into this function.
+Can you think of other statistics you might want to add to the output? It is not hard to add them!
+
+<<T5Kabacoff, eval = EVAL>>=
+# Slightly modified from Kabacoff's 'R in Action'
+ mystats <- function(x, na.omit=FALSE){
+ 
+if (na.omit) x <- x[!is.na(x)]
+m <- mean(x)
+n <- length(x)
+s <- sd(x)
+r <- range(x)
+IQR <- IQR(x)
+skew <- sum((x-m)^3/s^3)/n
+kurt <- sum((x-m)^4/s^4)/n - 3
+   return(c(n=n, mean=m, stdev=s, range= r, IQR = IQR, skew=skew,
+            kurtosis= kurt ))
+ }
+ myvars <- c("mpg", "hp", "wt")
+ sapply(mtcars[myvars], mystats)
+
+@

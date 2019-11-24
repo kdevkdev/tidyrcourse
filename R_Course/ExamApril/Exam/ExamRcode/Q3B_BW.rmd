@@ -1,0 +1,72 @@
+---
+title: "Breast Cancer analysis"
+author: "Brian Williams"
+date: "8 April 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Introduction
+
+This analysis uses one of the standard (old) datasets used for investigating the characteristics of breast tumours in relation to the diagnosis of malign or benign. The [web site](http://archive.ics.uci.edu/ml/machine-learning-databases/breast-cancer-wisconsin/) gives detailed information about the variables in the dataset. The ExamResources folder also has file breast-cancer-wisconsin.names, which will explain what you need to know about the variables.
+ 
+The dataset is available directly from the package mlbench (a collection of datasets suitable for machine learning).  You will need to have installed the package to continue.
+
+```{r loadBCdata}
+library(tidyverse)
+library(mlbench)
+data("BreastCancer")
+dfBC <- BreastCancer
+rm(BreastCancer)
+summary(dfBC)         # Notice types of variables (See Environment pane)
+head(dfBC$Bare.nuclei, 100)      # NA's in this one
+```
+
+Now undertake some exploratory analysis, focussing on the variables Cl.thickness, Cell.size and Cell.shape in relation to Class (the diagnosis).
+This exploratory analysis should include tabulation and plotting using ggplot2.
+First some tables:
+```{r Table1}
+
+```
+
+
+```{r  Table2}
+
+```
+
+and then some plots...
+
+```{r ggplot1}
+
+```
+
+
+
+```{r ggplot2}
+
+```
+
+.. and then a logistic regression of the probability of malignancy vs Cl.thickness.  
+
+You will need to mutate the Cl.thickness variable in dfBC to numeric and also mutate dfBC to create a new numeric variable Malignant which uses values 0 and 1 in place of "benign" and "malignant" 
+It will look in part like this:
+%>% mutate(Malignant = ifelse(Class == "benign", 0,1)
+
+Once you have these two mutations you can use the function *glm*  with *family = binomial* to do the regression. 
+
+Finally, you can pipe the mutated dfBC into ggplot: 
+
+```{r NeedsMutatedDF}
+dfBC %>%  ggplot(aes(x=Cl.thickness, y = Malignant)) +
+  geom_jitter(height = 0.04, width = 0.2, alpha = 0.3, colour = "brown") +
+  geom_smooth(method = "glm", 
+              method.args = list(family = "binomial"))
+
+```
+
+You might like to tidy up the axis labels and give the plot a title?
+                                    
+                                

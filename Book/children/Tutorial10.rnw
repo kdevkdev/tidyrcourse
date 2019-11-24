@@ -1,0 +1,28 @@
+%Template for children
+% Change chunk name to chapter title
+% ALl chunk names to be preceded by Tn or Ln  (where n is chapter or tutorial number)
+
+
+<<Tutorial10, include=FALSE>>=   
+set_parent("../tidyRcourseBook.rnw")
+EVAL <- FALSE
+warn <- FALSE
+@
+
+
+\chapter{Tutorial 10 - Misc functions}\label{T10}
+
+\author{Brian Williams $<$\href{mailto:bjw649@gmail.com}%
+{bjw649@gmail.com}$>$}
+
+\section{Preliminaries}
+
+Go to the Code folder and open the courseCode.R file.  Find "Tutorial10".
+
+\textbf{Set the working directory to that of the source file}.
+
+
+
+
+
+%\printindex

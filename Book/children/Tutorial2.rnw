@@ -1,0 +1,21 @@
+<<Tutorial2, include=FALSE>>=  
+library(knitr)
+set_parent("../tidyRcourseBook.rnw")
+@
+
+
+\chapter{Tutorial2 - RMarkdown practice using functions, dataframes, packages}\index{R Markdown}
+\index{Packages!Installing}\index{Packages!Loading}\index{Core!library()}
+\author{Brian Williams $<$\href{mailto:bjw649@gmail.com}%
+{bjw649@gmail.com}$>$}
+
+\section{Preliminaries}
+
+Go to the Resources/courseCode folder and open file "Tutorial2.R". Save it in your myRcode folder
+\textbf{Set the working directory to that of the source file}.
+Go to the Resources folder and open the file 'RmarkdownCheatSheet.pdf'.
+
+NOTE: The R Markdown document you create in this tutorial will be part of your submission of Assignment 1.
+
+%\printindex
+

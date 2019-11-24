@@ -1,0 +1,223 @@
+
+<<Tutorial1, include=FALSE >>=
+library(knitr)
+set_parent("../tidyRcourseBook.rnw")
+warn <- FALSE
+EVAL = FALSE
+@
+
+
+\chapter{Tutorial 1 - Rstudio, dataframes, packages and file handing}
+
+\author{Brian Williams $<$\href{mailto:bjw649@gmail.com}%
+{bjw649@gmail.com}$>$}
+
+\section{Preliminaries}
+
+Go to the Resources folder and open the courseCode.R file.  Find "Tutorial1". Copy it.  Open RStudio. Open a New R script.Paste Tutorial1 into the edit pane of the New file and save it in your myRcode folder as 'Tutorial1.r'.
+
+\section{Working Directory}\index{Working directory}
+
+In RStudio you can change to your working directory of choice using the menu as follows: [Session->Set working directory\...] or you can use the standard R command, \texttt{setwd()}\index{Core functions!setwd()}.  If you use the menu to set the working directory to the directory of the current file, using [Session->Set working directory->To Source File Location], you will see the  \texttt{setwd()} function used in the Console Pane.
+
+
+<<Tl1Getwd, eval = EVAL >>=
+getwd()
+@
+Amongst other things, \texttt{getwd()} can be helpful in reporting results if you have a complex file system and potential confusion some months later when looking at the output.
+If you want to see the files in the working directory, then use the function \texttt{dir()}\index{Core functions!dir()}.
+
+<<T1dir, eval = EVAL >>=
+dir()
+@
+
+Note that even though it has no arguments you must include the parentheses when using this function.
+
+\section{Importing external files}\index{Importing external files}
+
+
+<<T1read.table, eval = EVAL >>=
+library(tidyverse)
+bP        <- read_csv(file="../Data/BackPain.csv", na = "", comment = '#', skip = 0)
+            # bP is a tibble so only 10 lines are printed (and a limited number of variables, too)
+select(bP,alcohol)
+bP <- bP %>% mutate_if(is.character, as.factor)
+select(bP,alcohol)
+@
+
+
+\begin{enumerate}
+\item The argument list begins with a 'relative' file name. The '..' means go to the parent folder of the working directory then look for a folder  called 'Data' and select the file called 'BackPain.csv' in that directory.
+
+\item In R, missing data is indicated with the string 'NA' (without the quotation marks). \texttt{na.strings = ""}: This is a 'nothing entered' value for the \texttt{na.strings} parameter.  This argument provides values of NA for the data frame entries which have the characters listed for this parameter, i.e. with our setting, those entries which have a 'blank' (white space), are made 'NA'. In some other datasets, a missing value might be indicated by a symbol such as '*' or '\#' and this argument let's you specify that.
+
+
+\item You can use the \texttt{col\_names} argument in two ways. If you set \texttt{col\_names = FALSE}, \texttt{read\_csv} skips the first line of the data file and constructs column names with the form X1, X2, X3 etc. The other way of using \texttt{col\_names} is to set it to a vector of your own choice of column names, i.e. something like: {col\_names = c("x", "k", "w", ...)}
+
+\end{enumerate}
+
+
+\section{Cleaning up NA's - rough approach!}
+
+Now we will do a very rough cleanup of the data, by simply removing all records which have one or more missing data items (NA's). We'll begin by summing the total number of NA's, then removing the rows in which they are present, and then repeating the sum check to ensure that we have indeed removed all the NA's.
+
+<<T1Dataframe3, eval = EVAL >>=
+sum(is.na(bP))   # compute number of NA's
+bP <- bP %>% drop_na()  # Use this to remove all cases (rows) containing at least one NA from
+#  The non-tidyverse way  bP <- na.omit(bP)
+sum(is.na(bP))     #check whether all NA's are removed
+#----------------------------------------------------------------------------------
+@
+
+  \subsubsection{Notes:}
+
+\begin{itemize} 
+
+\item{\texttt{is.na(X)}\index{Core functions!is.na()} returns a vector of \texttt{TRUE} or \texttt{FALSE} for every element of X. When summed, TRUE = 1, FALSE =0.}
+
+\item{\texttt{omit.na()}\index{Core functions!omit.na()} and \texttt{tidyR::drop\_na()} are very powerful and produces a 'complete cases' data frame - but be careful, you may lose a lot of data!  Look at the new size of bP!}
+
+\item{Where logicals are included in a numerical computation, R assumes \texttt{TRUE} = 1, \texttt{FALSE} = 0, so \texttt{sum(is.na(bP))} computes the total number of NA's in the data frame.}
+\end{itemize}
+
+
+\subsection{Referencing data frame elements}\index{Data frame!referencing elements}
+
+Outside of tidyverse, the preferred way of referring to variables is with the '\$' notation, e.g.  \textbf{dfn\$varName} -  where dfn is the data frame name, and varName is the variable name. You can also refer to it using the number of the column in square brackets. If you use the name of the column, you will still correctly access it if you change the column numbering in some other operation.  However, there are times when using column numbers is convenient.
+
+We use square brackets with row, column indexes to select individual elements of the data frame.
+\textbf{bP[3,2]} is the 3rd element of the variable in the second column.
+
+If the comma is kept but either index is omitted, all elements of the missing index are selected. Thus \textbf{bP[,2]} refers to all values recorded for the variable in the second column and \textbf{bP[2,]} refers to all items recorded in the second row.
+
+In operations where a number of variables are to be accessed, it is sometimes easier to use their column number with the \texttt{bP[colNumber]} notation.
+
+Suppose that in the back pain dataset, we carelessly assume the 11th column is named "bmi".
+
+<<T1Columns, eval = EVAL >>=
+##Column selection in data frames  *******Use names!!!!!!
+#-----------------------------------------------------------------------------------
+head(bP[11])      #print out the 1st 6 elements of bmi....OOOPS!
+head(bP$bmi)       #print out the 1st 6 elements of bmi
+names(bP)          # Ah - bmi is col 12!
+#-----------------------------------------------------------------------------------
+bP %>% select(bmi)
+@
+
+
+\subsection{Imports from other statistical packages}
+The R package 'foreign' enables reading of data stored by Minitab, S, SAS, SPSS, Stata, Systat and others. You can also export (Write) files from R in the formats of some other packages, including Stata.  Objects such as data frames can be saved as ASCII (text) files to produce .csv files which can be read from almost any other program.  ASCII files, however, will be much larger than binary files like .rda (see below under Save).  Here's an example of reading from a Stata file.  We'll save the file as a .Rdata file and use it in Tutorials later. This file contains some additional variables.
+
+<<T1readStat, eval = EVAL >>=
+library(haven)
+bPx <- read_dta("../Data/BackPainData_1.dta")
+summary(bPx)
+save(bPx, file =  "../Data/BackPainData_1.Rdata")
+@
+
+
+\section{Listing and removing  objects}\index{Objects!listing}\index{Objects!removing}
+
+Let's create a 'vector' object so we can see how objects are listed and removed in R and RStudio. 
+
+
+<<T1listRemove, eval = EVAL >>=
+vect1 <- bP$agegr                                #1 Created a vector object  
+ls()                                      #2 List all objects in WD
+objects()                                                 #2 List all objects in WD
+remove(vect1)                                            #3 Remove object 'vect1'
+ls()
+@
+
+
+\begin{enumerate}
+\item The \$ notation has been used to select the column of the variable \texttt{agegr}. The code has assigned the vector of the variable to 'vect1'.
+
+\item Objects are listed by using either \texttt{ls()}\index{Core functions!ls()} or \texttt{objects()}.\index{Core functions!objects()} You must include the parentheses when using these functions. Note too, that the objects are already listed in the Environment Pane in RStudio.
+
+\item Objects can be removed using \texttt{remove()}\index{Core functions!remove()} or its abbreviated form, \texttt{rm()}.\index{Core functions!rm()}
+\item{ \textbf{All variables} in the Environment can be removed by clicking on the little 'brush' icon in the Environment toolbar.}
+
+\end{enumerate}
+
+\section{Saving objects and workspaces to files, reloading}
+
+The \texttt{save()} function is straightforward.
+
+With respect to the data we have been looking at here, we could do the following:
+<<T1save, eval = EVAL >>=
+save("bP", file="BackPain.RData")
+dir()
+@
+
+
+Now let's remove the object bP from our environment, and restore it by loading the saved file "BackPain.RData".\index{Core functions!save()}
+
+<<T1load1, eval = EVAL >>=
+remove(bP)
+ls()
+@
+Notice that bP is gone from the Environment pane as well as missing from the output of \texttt{ls()}.
+
+<<T1load2, eval = EVAL >>=
+load("BackPain.RData")
+ls()
+
+@
+Now we have it back.
+
+Notice that the loaded data takes the \emph{original object name}, not the file name. If you want to rename\index{Objects!renaming} the new object, you must firstly copy it and then remove the old object:
+
+<<T1renameObject, eval = EVAL >>=
+bP2 <- bP
+ls()
+rm(bP)
+ls()
+@
+R is clever about this.  Even though you will see both objects listed, R does not actually make a copy (which if your object is very large might cause a memory problem). When the R interpreter reaches the \texttt{rm()} function it \emph{then} simply changes the name of the object in memory.
+
+The \texttt{save()} function allows saving of multiple objects either named at the beginning of the command itself, or the first argument can be a list of the objects to be saved in the form of a character vector of the object names.
+ At the conclusion of a session \texttt{save.image(".Rdata")} is automatically offered.  This saves the entire workspace so that when R is next opened, the workspace can be loaded with \texttt{load(".Rdata")}\index{Core functions!load()}. Pay attention to the directory in which this is taking place! RStudio auto-loads the .Rdata file in your Documents folder at start-up. If you load the wrong .Rdata file, you can remove all files easily by clicking on the 'clear' tool in the Environment pane.
+Sometimes, you will want to save a workspace or a large cleaned data frame under another name so that it is not inadvertently opened or deleted (\texttt{save(myDataFrame,file =  "myFileName")})\index{Core functions!save()}. You can actually save a list of objects in this way (\texttt{save(myDataFrame, a, b, c, file = "myFileName")}).  You can also choose to save the data in ASCII (text) format (\texttt{save(myDataFrame,file = "myFileName", ASCII=TRUE)})\index{Core functions!save()}. Any time you want to load these back into your working environment, simply \texttt{load( "myFileName")}.  Try it out!
+There are a few functions that are important to know for saving workspace data to disk and subsequently re-loading it. You can see what data objects and functions you have created in the Environment pane. You can list them in the console pane using \texttt{objects()}.  You can remove a number of objects with the \texttt{rm()}\index{Core functions!rm()} command.
+
+
+There are two other related functions which can be very useful in the construction of self-contained \emph{minimal reproducible examples}.  These functions are \texttt{dput()}\index{Core functions!dput()} and \texttt{dget()}.\index{Core functions!dget()}
+
+<<T1dput1, eval = EVAL >>=
+t1 <- "The cow jumped over the moon, the little dog laughed to see such fun"
+dput(t1, file=t1)
+t2 <- dget(t1)
+t2
+@
+
+See \texttt{help(dput)} for more information.
+
+
+\section{Packages and their data}\index{Packages}
+Packages can be readily installed in RStudio, using the Tools menu: [Tools-> Install Packages...] then enter the package name in the middle edit window - leave the others. You will see some activity in the Console pane as the package downloads.\index{RStudio!installing packages}. Try installing the package \texttt{dplyr} - we will use it frequently in this course.
+
+To get an overview of the functions associated with a package, for example dplyr\index{Package!dplyr}, use the help function with a package argument: \texttt{help(package = "dplyrL")}\index{Core functions!help()}.
+
+On a Windows PC, installation of a package loads it into a folder in your computer's Documents folder. It will be called something like 'Documents/R/Win-library/3.1' (for Version 3.1). It can be useful to know the location of this folder if you are updating R.
+
+Packages may contain quite large datasets, so R assumes that you will not automatically want to load all your installed datasets into memory.  To \emph{load} a particular installed package, say ggplot2\index{Package!ggplot2}, you use the command \texttt{library(ggplot2)}\index{Core functions!library()}. (Within functions, we use \texttt{require(ggplot2)}\index{Core functions!require()}, which returns FALSE if the package cannot be found and allows the programmer to exit gracefully!) This makes the package's functions and datasets available. RStudio lists all the installed packages in the bottom-right pane under the Packages tab.  You can access a package by ticking (clicking in) the box alongside the package name in that pane as an alternative to the \texttt{library(ggplot2)} command. You will see that a number of base packages are already ticked.
+
+\subsection{The base data sets}
+
+If you use the command \texttt{search()}\index{Core functions!search()}, you will see that these packages are on R's search path, which it uses when looking for data files. To find out what's available, type \texttt{data()}\index{Core functions!data()}. You can access data sets in these packages with the command e.g. \texttt{data(Nile)}. When this command is executed, the dataset is 'soft-loaded'.  Until you actually do something with Nile, it is still not loaded into memory. Until you use it, in RStudio in the top right pane with the Environment tab active, it will appear annotated in grey with <Promise>. After typing, for example, \texttt{summary(Nile)}, into the console window, the data are loaded and the dimensions of Nile appear in the Environment pane.
+
+<<T1packages1, eval = EVAL >>=
+## Using the data in the base release of R
+search()
+library(help=datasets)
+data(Nile)
+summary(Nile)
+plot(Nile)
+@
+
+Notice that the \texttt{library()} function can be used to obtain help about a package as shown in this chunk.
+
+Finally, it is worth noting that sometimes there are identical function names in different packages which have been loaded and to distinguish them, we  specify the package appropriate to the function, using the operator '::'.  So to if we think there is any risk of ambiguity we can refer to function \texttt{fn1()} from package \texttt{packageName} as \texttt{packageName::fn1()}.\index{Operators!::}.
+
+%\printindex

@@ -1,0 +1,264 @@
+
+% ********  Template for children  ********
+
+% 1. Save as appropriate chapterName (Lecture7, Tutorial10 etc)
+% 2. Change title to above
+% 3. Change opening chunk name (Temp0) to chapter title
+% 4. Remove/replace chunk Temp1
+
+% All chunk names to be preceded by Tn or Ln  (where n is chapter or tutorial number)
+
+
+<<Lecture12, include=FALSE>>=
+set_parent("../tidyRcourseBook.rnw")
+EVAL <- FALSE
+@
+
+
+\chapter{Lecture 12- Times and dates, Debugging}
+
+
+\author{Brian Williams $<$\href{mailto:bjw649@gmail.com}%
+{bjw649@gmail.com}$>$}
+
+
+\section{Preliminaries}
+
+Go to the Code folder and open the courseCode.R file.  Find "Lecture12.R". Save it in myRcode and set the working directory to that of the source file.
+
+
+\section{Dates}
+
+Using dates in any environment (place, computer program) is tricky.  The order of days, months etc. varies customarily from place to place, and various platforms use different starting dates for computation of dates and times using numerical representations. Leap years need attention, but that's not too difficult.  
+
+Time however is much more complicated than that. We have to deal with timezones, daylight saving adjustments (leading to days with 23 hours or 25 hours) and there are even minutes with an extra second (a 'leap second') occasionally, resulting from adjustments for the slowing of the earth's rotation. We don't have time to deal with all the complications here, but we'll consider a few examples of conversions from string formats to and from Date objects.
+
+There are functions for manipulating dates in the base package, but the \texttt{lubridate} package 'masks' (overrules) some of these and is a little easier for string conversion and it also has lots of other tools for more complex date and time tasks.
+
+Firstly, however, try typing \texttt{?base::Date()} directly into the console window.
+You'll see a number of links appear in the Help window. 
+Type \texttt{help(date)} and you will see some straightforward documentation in the Help window (bottom right). Be aware that \texttt{lubridate::date} has precedence over \texttt{base::date}, when the \texttt{lubridate} package has been loaded. 
+\texttt{help(as.Date)} gives Help information about converting character dates to objects of class Date, when using the \texttt{base} package.  We are going to look at using the \texttt{base} package first (because you will often see it on the web) and then we'll look at the easier conversion of strings to dates in the \texttt{lubridate} package. 
+
+
+<<Dates1, eval = EVAL>>=
+##Standard Dates (from the base )
+#-----------------------------------------------------------------------------------
+date()   # Character string for date - not so good for manipulation
+str(date())
+z <- Sys.time() # Standard POSIX time and date class - time stored as seconds from ?
+z
+startP1 <- as.POSIXct("1970-01-01 1:0:01")   # allowing for 1 hour ahead of 
+# Greenwich (UTC)
+startP1
+as.numeric(startP1)
+str(z)
+z <- z+ 86400
+z
+#-----------------------------------------------------------------------------------
+@
+Let's have a slightly closer look at how date formats are dealt with. It's easiest to begin by looking at a few examples and you can fairly quickly pick out the patterns. Run the following code a few lines at a time and then have a look at the explanation below.
+
+<<Dates2, eval = EVAL>>=
+
+mbd <- "9.05.1945"                      # Perhaps this came from a .csv file
+as.Date(mbd, format = "%d.%m.%Y")
+jbd <- "09/14/51"                       # This one from some other source
+as.Date(jbd, format = "%m/%d/%y")
+tbd <- "5-June-1978"                    # ...and a third one
+tbD <- as.Date(tbd, format ="%e-%B-%Y")
+str(tbD)
+
+# And converting a Date back to some other character format:
+strftime(tbD, format = "%d.%m.%Y" )
+as.numeric(tbD)                      # the number is the number of days after....?
+
+# ...and R's default 'origin'
+as.numeric(as.Date("1-1-1970", format ="%e-%m-%Y"))
+
+# Today's Date:
+Sys.Date()
+strftime(Sys.Date(), format = "%e-%B-%Y")   # specify a format
+
+@
+  The \texttt{as.Date()} function converts the text input (first argument) using a specified format string (a named argument, the second in these examples). We see that the separators are all repeated in the format string, and that apparently special characters are used to indicate the form of the time period. 'Y' is used for a four-digit reference to the year, 'y' for a two digit year. We see 'B' for the unabbreviated name of the month, and 'd' is used for a two digit representation of the day of the month, but 'e' is used if the leading zero is to be replaced with a 'space'. 
+
+If you enter \texttt{help(strptime)} or \texttt{?strptime}, you will see all the possibilities, including representation of time of day. You will also see how to use either \texttt{strptime()} to convert character representations into objects off class "POSIXlt" and \texttt{strftime()} to convert either Date objects or "POSIXlt" objects back to a specified character format. 
+
+
+\section{The package \texttt{lubridate}}
+
+If you are dealing wth time series in any depth at all, this package is a very helpful one. Dates and times are very tricky!
+This package simplifies the format specifications a little -  though you are likely at some time to have to return to the standard repesentations.
+
+\subsection{Converting character strings to dates}
+
+The package \textbf{lubridate} uses helper functions to convert strings to dates. These functions 'parse' your string, once you have specified the order of day, month year - and you do this by calling a function named with the corresponding sequence of "d", "m", "y". Here are some examples.
+
+<<L12lubridateEx1, eval = EVAL>>=
+library(lubridate)
+dmy("8-May-1945")                               # It's VE day.
+dmy("8:May:1945")
+dmy("8/May/1945")
+dmy("8/05-1945")
+dmy("8-5:1945")
+VE_day <- mdy("5-8:1945")
+mdy("5-8:1945")
+mdy("5-8:1945")
+ymd("1945/May/8")
+ymd("1945/05-08")
+ymd(19450508)
+
+@
+Note the last one.  You can enter an entirely numeric character string without quotation marks.
+
+Adding time is straightforward - simply add an underscore and then one or more of the letters "h", "m", "s" as appropriate.
+
+<<L12lubridateEx2, eval = EVAL>>=
+dmy_hm("16/02/2017 11:00")                                #(straight from one of my Excel spreadsheets)
+dmy_hm("14/July/1977 21:45")                              # Does anyone know who was born at that time?
+datetime <- dmy_hm("14/July/1977 21:45")
+str(datetime)
+@
+Notice that the object returned by these \texttt{lubridate} fuctions is an international standard POSIXct date-time.
+
+From these POSIXct objects, you can also extract the year, month or day (\texttt{yday} is day of the year, \texttt{mday} is day of the month, \texttt{wday} is the day of the week [Sunday is 1], numerically)  
+
+<<L12lubridateEx4, eval = EVAL>>=
+wday(today())
+mday(today())
+wday(datetime)                                            # What day of the week was she born?
+month(VE_day)
+@
+
+Unfortunately, we don't have time to explore \texttt{lubridate} further, but there is a nice vignette available:
+
+
+<<L12lubridateEx3, eval = EVAL>>=
+vignette("lubridate")
+@
+...and there is a chapter on \texttt{lubridate} in "R for Data Science" \cite{Wickham2016}.
+
+
+
+
+\section{Debugging}
+
+Wickham in "Advanced R" \cite{Wickham2015} writes: 
+
+\begin{quote}
+Debugging is the art and science of fixing unexpected problems in your code. 
+\end{quote}
+
+and in Wikipedia, we have...
+
+\begin{quote}
+Debugging is the process of finding and resolving bugs or defects that prevent correct operation of computer software or a system.
+\end{quote}
+
+Debugging code can take almost as long as planning and writing the code in the first place.  Bugs take many forms. For example, some result from simple typographical errors, others from small errors in logic in translating a mathematical concept into computer code -and yet others come from unplanned circumstances in the use of the code. 
+
+Some, like the last type, may have immediately obvious approaches to a solution of the problem, while others may take a painstaking, line-by-line checking of the code. In the past, common practice was to print results as variables changed (sometimes line-by-line) but modern software generally has, as part of the development environment, some kind of debugging facility. RStudio is no exception and the recent versions have shown substantial improvement in this capability.
+
+We'll begin by taking a brief look at conditions (errors, warnings and messages) and then we'll work through some simple debugging exercises in the RStudio development environment.
+
+\subsection{Anticipated problems - using condition functions}\index{Conditions}
+
+Not all of the problems encountered in running programs are unexpected and the prudent programmer works very hard to anticipate possible problems in advance so that suitable circumvention can be arranged \emph{before} problems occur.
+
+There are three immediately useful functions for dealing with these anticipated problems.
+\begin{itemize}
+\item{\texttt{stop()}\index{Conditions!stop()}\index{Core functions!stop()} terminates execution and allows presentation of a message to the user.}
+\item{\texttt{warning()}\index{Conditions!warning()}\index{Core functions!warning()}   generates a warning message to the user when an unlikely and possibly dangerous, but not illegal, activity has been undertaken.}
+\item{\texttt{message()}\index{Conditions!message()}\index{Core functions!message()} is used for informative messages - not necessarily indicating potential problems.}
+\end{itemize}
+The advantage of \texttt{warning()} and \texttt{message()} over \texttt{print()} or \texttt{cat()} for this purpose is that \texttt{warning()} and \texttt{message()} can be easily 'turned off' with the functions \texttt{suppressMessages()} and \texttt{suppressWarnings()} respectively.
+
+The leading object arguments in \texttt{warning()} and \texttt{message()} are coerced to character and pasted together without separators, but blanks can be included at the end of character strings.
+
+<<L10DebugConditions, eval = EVAL>>=
+x <- 6
+warning("Jenny","Stewart",x < 10)
+warning("Jenny ","Stewart ",x < 10)
+message(x)
+@
+
+
+
+\subsection{Debugging with RStudio}
+
+We shall see that RStudio, while not as advanced as some programming development environments, offers a range of very useful methods for debugging.
+
+There is a nice introduction to debugging in RStudio at this \href{https://support.rstudio.com/hc/en-us/articles/205612627-Debugging-with-RStudio#introduction}{link}.
+
+\subsubsection{Example 1}
+
+This example is a very simple script which defines a function 'discrim' that checks whether the discriminant in a quadratic function is > 0. It returns TRUE or FALSE accordingly.
+
+<<T12discrimR, eval = EVAL>>=
+# Computing discriminant for solution of quadratic equation
+discrim = function(x) {
+  A = x[1]
+  B = x[2]
+  C = x[2]
+  tf <- B^2 > 4*A*C
+    return(tf)
+}
+
+@
+
+ In the next chunk, four test values for the coefficients A, B, C are loaded into the columns of a matrix, X and then \texttt{apply()} is used to test the discriminant for the data in each column
+<<T10example1, eval = EVAL>>=
+library(knitr)
+# Four example coefficients
+x1 <- c(3,4,1)      #a = 3, b = 4,   c = 1
+x2 <- c(1,2,1)
+x3 <- c(1.1,4,3)
+x4 <- c(1,2,2)
+
+X <- as.matrix(cbind(x1,x2,x3,x4))  # Load the test values into the columns of X
+
+dd <- apply(X,2,discrim)            # test the four example sets
+xt <- t(X)                          # transpose the matrix
+colnames(xt) <- c("A", "B", "C")    # Name the matrix columns
+xt
+df1 <- data.frame(xt, Discrmt_gt_0 = as.logical(dd)) # Add a test result column
+kable(df1, align = 'lccr', digits = 1)
+
+@
+
+
+The function \texttt{apply} is used to run discrim over each of the four columns, resulting in four logical values. In order to tabulate the result we have to transpose the matrix so that the results can be added as a new column. (We could not add them as a row prior to transposition, because they are of different type (logical) to the other elements in the columns (numeric).) We change the default names of the columns of the transposed matrix to A,B and C  and then add on the column with the results, creating a data frame in the process. The result, however, is clearly incorrect. The x1 vector, for example, gives $4^2  > 4*3*1$ which is clearly TRUE.
+
+
+Let's put the \texttt{discrim} function in a separate file.
+
+Copy the discrim function from the chunk above starting with the comment "Computing discriminant....."  as first line and finishing with the '\}', into a new script file (.R file).
+
+Now save the file as \texttt{discrim.R}.
+
+Now with the discrim.R tab active in the Edit pane, the Source tool at the right hand end of your tool bar in the Script pane will be visible. CLick on it. This will run the file, and you will see the function in the function list in the Environment Pane. 
+
+ 
+Now we know the code is not right. Somehow discrim is producing the wrong answer.  So we'll make the script stop inside the function during the computation so that we can check what is happening.  This is done by adding a 'break point' to one of the lines in the function.
+
+Click to the left of the number 3 at the left hand side of Line 3 (the line with $A = x[1]$). A filled red dot indicating a break point should appear. You are now ready to debug when the code enters the function discrim and stops prior to executing this line.
+
+Now put the cursor on the line which assigns dd to the output from the \texttt{apply} function and press, [Ctrl-Enter]
+
+ Wow! We have a new pane called 'Traceback and the Console window has a different prompt and four new tool buttons including a red 'Stop' button, there is new Data and Values in the Environment pane and in the Script window our breakpoint line is highlighted in yellow and there is a green arrow pointing to it.
+ 
+In the Console Pane, clicking on the Tool named 'Next' steps through the code in discrim.R - you can go to the return statement and then you will have the value of tf.  The problem is obvious if you look at the values of A, B and C.
+
+In the Script window, select the right hand side of line 5,i.e. $B^2 > 4*A*C$. Copy and paste it into the Console window - press 'Return'.  The calculation is carried out. This pane is in debug mode and can be used to explore relationships in your code using the variables' current values. These values are shown in the Environment pane. 
+
+Until now, most of the Debug menu has been 'greyed' out and has been unusable. No more.  Now you can use it to proceed stepwise through your code, watching how the variables change as you go. You can take short cuts by selecting 'Finish Function/Loop' and if you are finished you can select 'Stop Debugging' (or click on the red 'Stop' button in the Console.) The buttons in the console window do similar things.
+
+The problem with our code is evident already of course, so we need not proceed further.
+
+Experiment with the debugger on some small scripts and you will soon see how valuable it can be. In more complicated code, it can be very difficult to uncover logical errors and some can be very subtle. With a good debugger, like this one, all things are possible!
+
+
+
+
+

@@ -1,0 +1,230 @@
+---
+title: "Q1"
+author: "Brian Williams"
+date: "19 March 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+(1)Put your exam code in the author space above
+
+The data analysed in this folder is a new backpain dataset.  Descriptions of the variables are listed in the file Variables_BackPain2.xlsx in the ExamResources folder. There is another file, called BACKPAIN_EXTRACT_GenericIndividualQ.pdf, which you may also find useful.
+The data is in a Stata data file called BackPainData_1.dta, which is located in the ExamData folder.
+
+
+Here are the variables summarised.
+
+```{r readData, echo = FALSE, message = FALSE}
+library(tidyverse)
+library(haven)
+df <- read_dta("../ExamData/BackPainData_1.dta")
+#summary(df)
+```
+
+Take a look at the summary. There are a few un-helpful variable names, so make the following changes.
+
+(2)Rename the variables:
+
+1. quintile_c to wealthq
+2. heightvalid to height
+3. screen12
+4. q4008
+5. q4009 (See questionaire BACKPAIN_EXTRACT....pdf in ExamResources)
+
+```{r reNAme}
+df <- df %>% rename(wealthq = quintile_c,
+                    height = heightvalid,
+                    disabIndex = screen12,
+                    bP30 = q4008)
+select(df, wealthq, height, disabIndex, bP30)
+
+
+```
+
+
+We will focus on the following 11 categorical variables. .:
+
+1. residence
+2. sex
+3. country
+4. wealthq (changed from quintile_c) 
+5. agegr
+6. educ4gp
+7. bmi_4gp
+8. drinkYN
+9. arthritis
+10. depression
+11. eworked
+
+When the df is loaded these 11 variables are listed as numeric.  
+
+(3)Change the 11 listed variables to factors.
+
+```{r asFactor}
+df <- df %>% mutate_at(vars(residence, sex, country,
+                       wealthq, agegr, educ4gp,
+                       bmi_4gp, drinkYN, arthritis,
+                       depression, eworked),
+                       funs(as.factor))
+summary(select(df, residence, sex, country,
+                       wealthq, agegr, educ4gp,
+                       bmi_4gp, drinkYN, arthritis,
+                       depression, eworked ))
+
+```
+
+
+(4)The coding of the level names in these factors is not self-explanatory, so referring to the Variables_BackPain2.xlsx file, give concise, useful names to the levels of the 11 factor variables in the list.
+
+```{r recode}
+levels(df$residence) <- c("urban", "rural")
+levels(df$sex) <- c("male", "female")
+levels(df$country) <- c("China", "Ghana" ,"India", "Mexico", "Russian Fed", "Sth Africa")
+levels(df$wealthq) <- c("poorest", "poor", "middle", "rich", "richest")
+levels(df$agegr) <- c("50-59","60-69","70-79","80+ years")
+levels(df$educ4gp) <- c("no primary", "primary", "secondary/high", "college/university")
+levels(df$bmi_4gp) <- c("normal", "underweight","pre-obese", "obese")
+levels(df$drinkYN) <- c("abstainers", "drinkers")
+levels(df$arthritis) <- c("no", "yes")
+levels(df$depression) <- c("no", "yes")
+levels(df$eworked) <- c("currently working", "currently not working", "never worked")
+
+```
+
+
+(5)Add a summary with the new names and levels to this document.
+```{r summary}
+df %>% select(residence, sex, country,
+                       wealthq, agegr, educ4gp,
+                       bmi_4gp, drinkYN, arthritis,
+                       depression, eworked) %>% 
+  glimpse()
+```
+
+
+(6)Prepare a boxplot of bmi for men and women on the same plot and histograms of bmi for men and women on another plot. Put the two plots alongside one another.
+
+```{r boxhist}
+library(gridExtra)
+
+p1 <- df %>% 
+  ggplot()+
+  aes(x = sex, y=bmi, fill=sex)+
+  geom_boxplot()+
+  theme_classic()
+
+p2 <- df %>% 
+  ggplot()+
+  aes(x=bmi, fill=sex)+
+  geom_histogram(binwidth = 0.5, position = "identity", alpha=.5) + xlim(0,75)
+
+grid.arrange(p1,p2, ncol=2)
+
+```
+
+
+(7)Prepare some tables highlighting associations between any groupings of the categorical variables above that you think will be of interest. You should prepare at least 6 groups and no more than 8. A three-way table is a single group and a two-way table is a single group. Do not use four-way grouping, please! Comment **briefly - one sentence** on each table.
+
+Note that 3-Way tables don't produce headers for the individual tables!
+
+```{r tables1}
+library(janitor)
+library(knitr)
+df %>%
+  tabyl(residence, wealthq, show_na = F) %>% 
+   adorn_percentages("all") %>% 
+   adorn_rounding(2) %>% 
+  kable()
+
+
+```
+
+```{r tables2}
+df %>% 
+  tabyl(wealthq, drinkYN, country, show_na = F) %>% 
+   adorn_totals(where = c("row", "col")) %>% 
+   adorn_percentages("all") %>% 
+   adorn_rounding(2) %>% 
+  kable()
+
+```
+
+```{r tables3}
+
+```
+
+
+```{r tables4}
+
+```
+
+
+```{r tables5}
+
+```
+
+
+```{r tables6}
+
+```
+
+
+(8)Prepare a scatter-plot of WHOQoL vs BPburden, with a linear smoother. Use the alpha transparency parameter in the plot. Repeat with WHOQoL vs your re-named screen12.
+Comment on the comparison.
+
+```{r plotSmooth}
+
+```
+
+
+(9)Use the lm() function to do the regression of WHOQoL vs BPburden and then plot the diagnostics.
+
+
+```{r selectVariables, fig.width=8}
+p1 <- df %>% 
+  ggplot()+
+  aes(x = BPburden, y = WHOQoL)+
+  geom_point(alpha=.05)+
+  geom_smooth(method = "lm")+
+  coord_equal()
+
+#Repeat with WHOQoL vs your re-named screen12.
+p2 <- df %>% 
+  ggplot()+
+  aes(x = disabIndex, y = WHOQoL)+
+  geom_point(alpha=.05)+
+  geom_smooth(method = "lm")+
+  coord_equal()
+
+grid.arrange(p1,p2, ncol=2)
+```
+
+
+
+```
+
+
+(10)Show boxplots of the bmi of Urban, Chinese women for all wealth categories and use colour to show smokers and non-smokers.
+
+```{r  boxBMICWUS}
+df %>% filter(sex=="female", residence=="urban", country=="China")%>%
+  mutate(tobaccoYN = as.factor(tobaccoYN)) %>% 
+  mutate(tobaccoYN = fct_recode(tobaccoYN, "Non-smoking" = "0","Smoking" ="1" )) %>% 
+filter(complete.cases(residence, sex, country, tobaccoYN, wealthq)) %>% 
+  ggplot()+
+  aes(x=wealthq, y = bmi, fill=tobaccoYN)+
+  geom_boxplot()
+
+```
+(11)Save the cleaned up df in the ExamData folder so that it can be loaded in Q2.
+
+```{r save}
+
+```
+
+
+(12) Test that the file knits properly, then save it in the examRcode folder.
+

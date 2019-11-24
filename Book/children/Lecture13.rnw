@@ -1,0 +1,142 @@
+
+% ********  Template for children  ********
+
+% 1. Save as appropriate chapterName (Lecture7, Tutorial10 etc)
+% 2. Change title to above
+% 3. Change opening chunk name (Temp0) to chapter title
+% 4. Remove/replace chunk Temp1
+
+% All chunk names to be preceded by Tn or Ln  (where n is chapter or tutorial number)
+
+
+<<Lecture13, include=FALSE>>=   
+library(knitr)
+set_parent("../tidyRcourseBook.rnw")
+
+@
+
+
+\chapter{ Lecture 13 - Reproducible research,Packages - the future?}
+
+\author{Brian Williams $<$\href{mailto:bjw649@gmail.com}%
+{bjw649@gmail.com}$>$}
+
+
+\section{Reproducible research}
+
+The ideas of reproducible research (RR)\index{Reproducible research} have been around for a long time(Knuth, 1988, Gentleman,2004) \cite{Knuth1984, Gentleman2004}, but there has been a great deal of interest recently because of some notable failures in reproducibility.  There have been a number of high-level meetings of government funding agencies, national science bodies and high-impact journal publishers. Take a look at the following links:
+
+\begin{itemize}
+
+\item{\href{http://www.nature.com/news/repetitive-flaws-1.19192}{Nature (Jan 2016)}}
+\item{\href{http://grants.nih.gov/grants/guide/notice-files/NOT-OD-16-011.html}{US National Institute of Health (Oct 2015)}}
+\item{\href{http://journals.plos.org/plosbiology/article?id=10.1371/journal.pbio.1002334}{PLOS Biology (Jan 2016)}}
+\item{\href{http://www.journals.elsevier.com/journal-of-biomedical-informatics/call-for-papers/call-for-papers-reproducible-research-for-biomedical-informa/}{J.Biomed Inf (2016)}}
+\item{\href{http://www.sciencemag.org/news/2015/06/study-claims-28-billion-year-spent-irreproducible-biomedical-research}{Science (Jun 2015)}}
+
+\end{itemize}
+
+The philosophy of reproducible research is entirely in line with the notions in science of repeatability of experiments but there is still discussion about exactly what constitutes 'reproducible research' and the problem is compounded when we take the broad view of research and include experimentation, collection of data etc rather than our rather narrow focus on the process of data analysis. We \emph{will} focus on reproducible computations however, since that is the business at hand.
+
+Before going any further we should at least turn to Knuth's view of \emph{Literate Programming}\index{Literate Programming}. He says \cite{Knuth1984}:
+
+\begin{quote}
+"Let us change our traditional attitude to the constuction of computer programs: Instead of imagining that our main task is to instruct a \emph{computer} what to do, let us concentrate rather on explaining to \emph{human beings} what we want a computer to do."
+
+\end{quote}
+
+The thrust of Knuth's discussion is that we write a document explaining our analysis and present the code to demonstrate it within the explanation.  The code is said to be 'weaved' into the explanation. So let's for our purposes propose a definition.
+
+\begin{quote}
+\emph{Reproducible research is a form of electronic documentation incorporating both explanation and actual computational code (together with its associated data and computational results) so that a third party can themselves access data and code and with the help of the explanation, repeat the computations and verify that the results so obtained match those in the document.}
+\end{quote}
+
+Despite the 'hype' I think it is fair to say that there has not been as much reproducible research published in the bio-medical literature as one might have liked (but there is reason to hope that this situation may change in the next few years). There have been many publications in other areas of computation [see for example \href{http://www.csee.wvu.edu/\~xinl/source.html}{Xin Li's collection}], described by their authors as reproducible research, and it is probable that a very large fraction of them do constitute descriptions of analytical and statistical processes which, if carefully undertaken as prescribed, will reproduce the reported results.
+
+
+However...
+
+There are others, which would once have done so, but there have been historical changes in either the underpinning data-set or dependent software libraries, which result in three possible unsatisfactory outcomes.Here is another site offering a number of articles of 'reproducible research'.
+\href{http://bioinformatics.mdanderson.org/supplements.html}{MD Anderson Cancer Center}.
+
+\begin{itemize}
+\item{ The process cannot be completed as described.}
+\item{ The process can only be completed with some modification, introducing some doubt as to the validity of the reproducibility.}
+\item{The results differ from those reported.}
+\end{itemize}
+
+
+\section{For how long should it be reproducible?}
+
+
+Maintenance of reproducibility\index{Reproducible research!maintenance} in electronic documentation of RR over time is a significant issue. In rapidly developing technologies, such as genomic analysis, database formats change as well as underpinning software.  The Bioconductor site has probably the most comprehensive testing routine of any similar repository - but still after some time, you can expect difficulties.  One significant aid is to incorporate RR in a package and submit it to Bioconductor where it will be tested daily for compatibility of supporting packages and databases.
+
+One could argue, too, that in areas of rapid advancement,  there is no point in maintaining long-term reproducibility (Not an argument that I would \emph{entirely} agree with.)
+
+We need to consider the context. For some of these, you may require support from computer sciene specialists. Here are the three most likely scenarios with my recommended approaches (in square brackets)  from the list above and a minimum maintenance period.
+\begin{enumerate}
+\item{Reporting to senior colleagues (research supervisors), [4,5], 1 year}
+\item{Collaborating with others (possibly remotely)[5], 3 years}
+\item{Preparing a document for publication to a wider audience (Journal, Book etc)[5,6], 5-10 years, depending on the rapidity of developments in the research environment.}
+\end{enumerate}
+
+\section{What kinds of documentation have been presented?}
+
+Modern documentation of reproducible research comes largely in two forms. The first seeks to demonstrate that the results in a published document can be reproduced by a third party with the information - code, data, secondary explanations that is supplied. In the second,  the authors provide software and data to reproduce the paper in its entirety. I will refer to code compendiums\cite{Gentleman2004} (code, associated packages and data) that allows reproduction of the paper including code and  results of evaluation of the code as \emph{literate code}.
+
+Here's a list of possible approaches
+
+\begin{enumerate}
+\item{ A careful explanation, step by step of the analysis is provided along with a data set. No code for the analysis. (Probably no longer acceptable as RR.)}
+\item {A collection of code and data files along with an explanation of how they may be used to reproduce the results shown in the original publication.}
+\item {A collection of files including perhaps code, data, external images and  literate code are presented along with a \emph{Makefile}, allowing reproduction of the results and original document in an operating environment supporting Makefile useage (Unix)}.
+\item {A zipped collection of folders containing code, data and possibly literate code for production of a paper.}\label{zip1}
+\item{The previous two can be a \emph{GitHub repo}\index{Reproducible research!GitHub}, from which the files can be extracted, or from which a package can be installed using the package \texttt{devtools} see Tutorial 13, Chapter~\ref{T13}.}
+\item{An R package, possibly on the Bioconductor\index{Reproducible research!Bioconductor} site for on-going automated testing.}
+
+\end{enumerate}
+
+
+\section{How should we do it?}
+firstly, we need a platform on which the sharing of code and data can easily take place.
+We'll talk a little more about Git/GitHub in the Tutorial, \ref{T13}, but it certainly provides a framework allowing this kind of collaborative activity.
+
+The next thing to consider is the software  you plan to use for your literate code.  In R there are two main choices, both strongly supported by the RStudio environment.  The first uses the package \texttt{knitr} to allow the inclusion of chunks of R code in \LaTeX{}  documents (these will have the extension \texttt{.Rnw} and the other option is to use R Markdown (using the R package \texttt{rmarkdown}) - this also allows chunks of R code in a Markdown document (extension \texttt{.Rmd}).
+
+Markdown can be learnt in 20 minutes, as we have seen. \LaTeX{} is far, far more complicated but can produce typeset documents.  RStudio now through the \texttt{rmarkdown} package, gives you the option of converting your document to MS Word at the click of a button (as well as \texttt{.pdf} or HTML forms.)  I strongly recommend that you continue with R Markdown for the moment and if you have a 'nerdy' side you may want to tackle \LaTeX{} later.
+
+\LaTeX{} is still widely used in the sciences and especially in the mathematics communities.  There are two highly recommended references.  The first to get you started is free, Oetiker's  \emph{'The not so short introduction to \LaTeX{}}', \href{https://tobi.oetiker.ch/lshort/lshort.pdf}{https://tobi.oetiker.ch/lshort/lshort.pdf} and secondly, the classic '\LaTeX{} Companion' by Mittelebach et al \cite{Mittelbach2004}.  Be aware that there is a long steepish learning curve.
+
+\section{Packages for Medical/Public Health research}
+Finding the right selection of packages is of fundamental importance when using R and fortunately the R community has recognised the problem of having a plethora of packages and the obvious need for guidance. The CRAN Task Views (CTV's) have been set up for that purpose and provide a very useful overview of a number of subject areas and are a must-see for the beginning R user/researcher. If you look at the web page you will see that it's possible to install \emph{all} the packages for a particular task view with a couple of simple commands. Do bear in mind that  if you have a really huge library, it can become unwieldy in operations like "Check for Package Updates"!
+
+\section{Medical - Bioconductor}
+
+ CTV's on Genetics, Phylogenetics,  MedicalImaging, ClinicalTrials, ExperimentalDesign, Pharmacokinetics, Psychomtrics
+ 
+ Genetic analysis and experimentation as scientific endeavour has exponentially increased in the last 20 years or so, much of the development resting on statistical analysis of very large data sets.  Biological systems are not mechanistic and are subject to 'random' variability which must be captured in experimental analysis with some kind of statistical characterisation. Modern experimental technology in this field often uses experimental arrays with more than a million elements. Data from a time sequence on an array of this size can rapidly outstrip computer memory.  The data from the experiments must then often be compared with that in Genomic databases, where much larger datasets are encountered.  Management of data on this scale requires considerable expertise in computer science and research in this area is usually undertaken by multi-disciplinary teams. 
+
+Not surprisingly, the research community has established a resource centre for genetic statistics in R.  It resides at \href{http://www.Bioconductor.org/}{Bioconductor.org}. 
+
+The \href{http://www.bioconductor.org/}{Bioconductor web site} is a \emph{'must-see'} site for anyone contemplating genomic analysis\index{genomic analysis}.
+
+Here's the 'about' paragraph you'll find there and a bit of history:
+\begin{quote}
+
+{\Large About Bioconductor}
+
+Bioconductor provides tools for the analysis and comprehension of high-throughput genomic data. Bioconductor uses the R statistical programming language, and is open source and open development. It has two releases each year, 1649 software packages, and an active user community.
+
+The Bioconductor project started in 2001 and is overseen by a core team, based primarily at the Fred Hutchinson Cancer Research Center, and by other members coming from US and international institutions.
+
+\end{quote}
+
+There is a wealth of data, code and learning resources on the Bioconductor site. The Bioconductor home page has links to various resources to help you install Bioconductor and its packages, learn how to use them, get support when you are in trouble, events (workshops etc), and  developing your own packages . It also has a 'Twitter' column and a News' headline. 
+ 
+Communication within cross-disciplinary teams in genomic analysis is a key element to their success and the Bioconductor site provides great learning support across the range of disciplines \cite{Huber2015}.
+
+One of the key elements of the Bioconductor site is its automated maintenance and testing of currency of packages and associated databases.  
+
+
+\section{Big data analysis}
+CRAN Task Views: Cluster, MachineLearning, NaturalLanguageProcessing, WebTechnologies, HighPerformanceComputing, 

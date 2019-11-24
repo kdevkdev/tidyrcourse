@@ -1,0 +1,26 @@
+%Template for children
+% Change chunk name to chapter title
+% ALl chunk names to be preceded by Tn or Ln  (where n is chapter or tutorial number)
+
+
+<<Tutorial12, include=FALSE>>=   
+set_parent("../tidyRcourseBook.rnw")
+evalChild <- FALSE
+warn <- FALSE
+EVAL <- FALSE
+@
+
+
+\chapter{Tutorial 12 - Practice L12 material }
+
+\author{Brian Williams $<$\href{mailto:bjw649@gmail.com}%
+{bjw649@gmail.com}$>$}
+
+
+\section{Preliminaries}
+
+
+
+To be advised in class.
+
+

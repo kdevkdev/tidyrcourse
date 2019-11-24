@@ -1,0 +1,415 @@
+
+% ********  Template for children  ********
+
+% 1. Save as appropriate chapterName (Lecture7, Tutorial10 etc)
+% 2. Change title to above
+% 3. Change opening chunk name (Temp0) to chapter title
+% 4. Remove/replace chunk Temp1
+
+% All chunk names to be preceded by Tn or Ln  (where n is chapter or tutorial number)
+
+
+<<Lecture10, include=FALSE>>= 
+library(knitr)
+set_parent("../tidyRcourseBook.rnw")
+EVAL = FALSE
+@
+
+
+\chapter{Lecture 10 - Intro to apply and other functions, distributions...}\label{L10}
+
+\author{Brian Williams $<$\href{mailto:bjw649@gmail.com}%
+{bjw649@gmail.com}$>$}
+
+\section{Preliminaries}
+Go to the Code folder and open the courseCode folder.  Find  and open "Lecture10.R". Save it in the myRcode folder. 
+Set the working directory to that of the source file.
+We'll use the back pain data set later in this lecture.
+
+<<L10Preliminaries1, eval = EVAL >>=
+library(tidyverse)
+load("../Data/BackPain.Rdata")
+bP <- drop_na(bP)
+@
+
+
+\section{Lists}\index{Lists}\label{L2Lists}
+Matrices and vectors must have all elements of the same type.  A list in R, is simply a collection of data objects (some of which might themselves be lists). It might comprise for example a 4 by 4 matrix, a 20 element numeric vector and a character vector containing two elements. Lists are the most general form of vector in R.  (We sometimes refer to the vectors we saw in Section~\ref{vectors} as \emph{atomic vectors}, because they only contain atomic elements, i.e. the basic types, numeric, character etc.)
+
+We will see that lists have a very important role for containing a collection of arbitrary pieces of data that is not in tabular form. It is easy to add extra data items to them, too. They are a widely used data object, especially within functions.  
+
+Let's construct one:
+
+<<L10List1, eval = EVAL >>=
+##
+#---------------------------------------------------------------------------------
+a  <- matrix(sample(1:20, 16, replace=TRUE), ncol=4)      #1. see note on sample()
+b  <- rep(c(3, 17, 4, 6, 11), 4)
+c1 <- c('Lena', 'Nice day!')
+l1 <- list(M = a, b = b, c2 = c1)                         #2. creating the list
+l1
+
+@
+
+\begin{enumerate}
+\item{Reminder: \texttt{sample(x,n)} returns \texttt{n} samples from a vector \texttt{x}.  The parameter \texttt{replace = TRUE} maintains all elements of \texttt{x} for all sample selections. The \texttt{matrix()} function constructs a matrix object, in this case with four columns }
+\item{The list\index{Core functions!list()} has been created with names for each list item. The first list item is the matrix \texttt{a} and has the name \texttt{M}. Don't forget when constructing small examples like this, that it is very dangerous to use 'c' as a variable name because it becomes confused with the base function \texttt{c()}. }
+\end{enumerate}
+
+\subsection{Accessing members of lists}\label{L2ListAccess}\index{Lists!accessing members of}
+Many (S3) data objects carry internal elements which can be accessed using a '\$' symbol, as we saw for data frames in Tutorial 1, Section~\ref{t1}.  A data frame is in fact a special kind of list (next section). The '\$' notation is a useful and informative approach because it allows the internal element to be named. Where numbers are not required for programming purposes, using names is much less prone to errors.
+
+Lists can also access elements using the square bracket notation that we have already seen for atomic vectors.
+
+<<L10ListAccess, eval = EVAL >>=
+
+class(l1$c2)                   #1. Dollar notation returns original object class
+l1$c2[2]                       #2.  accessing an element
+                               #    of a list member
+@
+\begin{enumerate}
+
+\item{List items are accessed by referring to them using the list name followed by a '\$' followed by the list item's  name. This access method returns the original object (class).}
+\item{To refer to an element of a list item, use the [] index system we have already seen.}
+\end{enumerate}
+
+<<L2List10, eval = EVAL >>=
+l1[2]                          #1.  Single bracket
+class(l1[2])                   #2.  Single bracket returns list!!
+l1[2:3]                        #3.  Single bracket can access multiple items !!
+class(l1[2:3])
+@
+  \subsubsection{Notes}
+\begin{enumerate}
+
+\item{List items themselves can be accessed by using the [] index system we have already seen.}
+\item{ -But note that this method returns a \emph{list}!}
+\item{ Because a list is returned, mutiple members can be indexed with a suitable index expression.  Very  useful for subsetting a list.}
+\end{enumerate}
+
+Sometimes, however, we don't want a list returned, we'd like the list item with its original type. We saw that happen with the '\$' notation.  This can also be done with a double square bracket notation, which can use names (in quotes) or numeric indexes:
+<<L10List3, eval = EVAL >>=
+
+class(l1[['c2']])
+l1[['c2']][1]                                #1.  double bracket with name
+
+class(l1[[1]])
+l1[[1]][4,1]                                 #2.  and with index
+@
+
+\textbf{Note} that in these two cases, subsetting with the double square brackets has resulted in extraction of  a character vector and a matrix.
+
+
+\subsubsection{Adding and removing members of lists}\index{Lists!adding members of}
+
+Adding and removing list members is very easy.  Once a list has been created, it is simply a matter of  naming a new member. It will be added to the end of the list.
+
+To remove a list member, it is set to 'NULL'.  Once done, the indices of following members are all shifted up one.
+
+As you might by now expect, you can use the \texttt{names()} function to either 'get' or 'set' names of list members.
+<<L10addRemoveListItem, eval = EVAL >>=
+d <- c(64, 69)
+l1$d <- d                                    #1.  Add a new member
+names(l1)[4] <- 'newName.d'                  #2.  Give it a name
+l1
+# Remove the item, using its name
+l1$newName.d <- NULL
+l1
+
+@
+
+
+\subsubsection{Notes}
+\begin{enumerate}
+
+\item{Adding a list item is straightforward. Lists can also be combined using \texttt{c()}.}
+\item{Deleting a list item simply requires assigning it a NULL value.}
+\end{enumerate}
+
+
+
+\section{The apply family of functions}\index{Core functions!apply()}
+The \texttt{apply} family is a very important group of functions in R.  They are very powerful and 'underneath' they are coded in the programming language C, making them very efficient.  Where they can be used instead of loop structures (see Section~\ref{L11loops}), they will generally compute much faster.
+
+\subsection{\texttt{apply()}}
+
+The function \texttt{apply()} returns a vector or array or list of values obtained by applying a function to the row or columns of a matrix, so \texttt{apply} requires that all the variables be of the same type. In general dataframes are of mixed type.  Let's subset our back pain data for that purpose. We'll look at just the numeric variables.   
+The arguments of \texttt{apply()} are as follows:
+\begin{enumerate}
+\item{Argument(1) is the name of the matrix,}
+\item{Argument(2) = 1 indicates that the function is to be applied to the rows  and argument(2) = 2 indicates that the function is to be applied to the columns.}
+\item{Argument(3) named FUN, is the name of the function which is to be applied. User functions can be included with argument 'x' of the user function corresponding to the rows or columns specified for application.} 
+\item{Additional arguments follow the function argument in \texttt{apply}'s argument list. Preferably, they should be named arguments in the call to \texttt{apply()}.}
+\end{enumerate}
+Here we demonstrate base R's \texttt{subset()} function. (We have seen that you can do it more tidily for all the numerics using \texttt{select\_if} from \texttt{tidyverse}).
+
+
+<<L10apply, eval = EVAL >>=
+bPNum <- subset(bP,select= c(age,bmi,waistc,disability, height)) #select most of the 
+                                                          # numeric variables
+pbw <-  function(x, power)     #defining our own function!!
+{
+x^power
+}
+
+head(bPNum)
+crbP <- apply(bPNum, 2, FUN = pbw, power = 1/3)
+head(crbP)
+apply(bPNum, 2, range, na.rm = T)
+
+@
+We will have a much closer look at defining our own functions in Section~\ref{ownFunction} 
+
+
+\subsection{\texttt{lapply()} and \texttt{sapply()}}
+
+The functions \texttt{lapply()}\index{Core functions!lapply()} and \texttt{sapply()}\index{Core functions!sapply()} are more useful in that they apply a specified function to each element of lists (data frames are a sub-class of lists in which each column is a member of the list.) The  \texttt{lapply()} function returns a list, while \texttt{sapply()} tries to simplify the result with regard to type.
+
+
+Firstly, let's have a look at a simple useful application of \texttt{sapply}. Here's how to select all the numeric variables in a data frame. (We can do this using \texttt{tidyverse}, too!)
+
+<<L10sapply, eval = EVAL >>=
+nums <- sapply(bP, is.numeric)    # -> a vector of T/F for the columns (variables)
+bPnum <- bP[ , nums]
+names(bPnum)
+# and here are the factors
+facs <- sapply(bP,is.factor)
+bPfac <- bP[ , facs]
+names(bPfac)
+@
+
+Here's an example which provides bmi means, listed country by country. 
+
+<<L10lapply, eval = EVAL >>=
+bP <- as.data.frame(bP)
+countryList <- list(bmiChina = bP[bP$country == "China","bmi"],
+                    bmiIndia = bP[bP$country == "India","bmi"],
+                    bmiGhana = bP[bP$country == "Ghana","bmi"])
+str(countryList)
+lapply(countryList,mean, na.rm=T)
+bP <- as_tibble(bP)
+
+@
+Note the requirement to set the tibble to a dataframe in this example!  And don't forget to convert it back or you could get into trouble later!
+
+
+Keep in mind that for data frames, we can do this using the dplyr package and that will generally be our preference. The function  \texttt{lapply()} is more general in that it applies to lists and when we are trying to access data which is not in the form of a data frame, lists will often be the natural form of the data.
+
+Here is the dplyr equivalent:
+
+<<L10dplyr2, eval = EVAL >>=
+library(dplyr)
+bmisum <- group_by(bP, country)
+bmiM <- summarise(bmisum, bmiMean = mean(bmi, na.rm=TRUE), bmiSD = sd(bmi))
+bmiM
+
+@
+\subsection{\texttt{tapply()}}
+The function \texttt{tapply(vector, factor, function)}\index{Core functions!tapply()} creates tables of some function (third argument) of variables in a vector (first argument) 'conditioned' on a factor variable (second argument).
+<<L10tapply, eval = EVAL>>=
+
+waistc   <- tapply(bP$waistc,bP$country,mean, na.rm = TRUE)
+waistcSD <- tapply(bP$waistc,bP$country,sd,  na.rm = TRUE)
+height   <- tapply(bP$height,bP$country,mean,  na.rm = TRUE)
+heightSD <- tapply(bP$height,bP$country,sd,  na.rm = TRUE)
+bmi      <- tapply(bP$bmi,bP$country,mean,  na.rm = TRUE)
+bmiSD    <- tapply(bP$bmi,bP$country,sd,  na.rm = TRUE)
+cbind(waistc, waistcSD, height, heightSD, bmi, bmiSD)  # make them into a table
+@
+
+
+
+\section{R functions - writing your own}\index{Function!user-written}\label{ownFunction}
+All programming languages provide some kind of 'function' to enable the modularization of complex tasks. R is unusual in that functions are objects. To define a function, we assign an \textbf{argument} list and a \textbf{body} to a name for the function object:
+
+<<Lecture10FncEx1, eval = EVAL >>=
+f3 <- function(x = 0, y = 0){
+  x*3*y
+  }
+x <- 7
+y <- 2
+f3(x,y)
+@
+
+Here we have created a function object called f3, which has two arguments, x and y. (We will discuss the '= 0' below). The body of this function, consisting of R expressions, is enclosed in curly brackets, although in this case, with a single expression, the curly braces could have been omitted.
+
+So, functions have a defined task accomplished using three components:
+\begin{itemize}
+\item{an input list of \textbf{arguments}, called the 'formals',}
+\item{a 'body' containing R expressions and}
+\item{an 'environment'.}
+\end{itemize}\index{Function!formals}\index{Function!body}\index{Function!arguments}\index{Function!environment}
+
+All functions also have a defined return value (output).
+
+The components of a function can be accessed using the functions \texttt{formals()},\texttt{body()} and \texttt{environment()}.
+
+<<L10FunctionComponents, eval = EVAL >>=
+f3
+ff3 <- formals(f3)
+ff3
+str(ff3)
+af3 <- args(f3)
+af3
+str(af3)
+body(f3)
+environment(f3)
+
+
+@
+
+
+The 'input' argument list is what makes functions different from scripts. Functions are a means to control computations so that inside the function, \emph{the only data objects which can be  assigned new values} are objects created within the function and then returned from it. This provides the tight control which is necessary in complex software. \textbf{Copies} of the values of the variables in the calling argument list are passed from the calling environment to the function.  Even if the argument is redefined within the function (by removing NA's for example), it is \textbf{local to the function} and the new value is not returned to the calling environment. It \textbf{is} possible, by using the special \textbf{super assignment operator}, <<-, or the \texttt{assign()} function to modify external variables ('globals'). The values of globals and variables in the calling environment can be accessed from within a function, but can only be changed using  <<-, or \texttt{assign()}. In general, using global assignment or accessing globals from within functions is dangerous and should not be done.
+
+The body of a function is a sequence of R commands. The body begins with an opening curly bracket and ends with a closing curly bracket. (Sometimes very short functions comprising a single command are created - these don't require curly brackets). Here's an example:
+
+<<L10InlineFUnction, eval = EVAL >>=
+singleLine <- function(x)  mean(c(x+6, x^2))
+singleLine(6)
+@
+
+
+The output of a function\index{Function!output}, in the absence of any specified return statement\index{Function!return statement}, is the result of the last computation. Only a single object may be returned, but it may be a list which has been constructed in the function to include a number of objects wanted outside the function\index{Function!return multiple objects}. The output is 'returned' to the calling environment, i.e. it becomes accessible in the part of your program where the function was called. (To complicate matters, this could be within another function!)
+
+This control of your data through input and output objects means that your function cannot inadvertently modify any other data objects and provides good data security. And it requires you to plan and define more carefully how you will make changes to your data.
+
+R is a little unusual, in that its functions are themselves objects. This means that in defining a function, the user assigns it to an object. Furthermore, as we have seen with other objects, to print it, simply type in its name. Functions, being objects, conveniently act in the same way.
+
+Let's begin with a simple example, which compares two vectors. In the calls to the function, the two arguments, a and b are given the values a1 and b1, by the assumption (from the function definition) that the first argument corresponds to a, the second, b. The following three functions produce the same output.
+<<L10Function1, eval = EVAL >>=
+# Simple functions showing alternative output mechanisms
+ gg1 <- function(a, b){
+   (a == b)                                   # Last evaluation is returned
+ }
+
+ gg2 <- function(a, b){
+   return(a == b)                            # Explicit statement of return
+ }
+ gg3 <- function(a, b){
+   d <- (a == b)
+   return(d)                                #  Another way
+ }
+
+a1 <- c(1, 1, 2)
+b1 <- c(1, 1, 1)
+
+gg1(a1, b1)
+gg2(a1, b1)
+gg3(a1, b1)
+
+@
+Notice how the functions are listed in the Environment pane after they have been 'run'. 'Running' the definition of a function (we say that we 'source' the function) produces no output, but we must do so before the function can be called.
+
+In order to make the use of arguments more flexible, default values\index{Function!argument default values} can be assigned to arguments so that it is not necessary to specify a value for them when the function is used ('called'). If an argument is not specified in the function calling statement, it assumes the default value.
+
+Argument names\index{Function!named arguments} can also be used to more clearly specify them, but as we saw above, it is not necessary to refer to the argument by  name when specifying a value, provided that the order of the arguments is strictly adhered to. If calling statements use  arguments in sequences which are different from the function definition, then argument names \emph{must} be used for all arguments after (and including) the first out-of-sequence argument.
+
+R also offers a '...' argument\index{Function!argument '...'}, which is for 'extra' arguments.  It can be used for combining a list of unknown number of objects (as in the \texttt{list()} function, for example), or as in the case of plot(x, y, ...), it allows additional named parameters to be passed to \texttt{par()}. We will see below, how you can make use of this construct in your own functions.
+
+Everything in R is an object and every object knows how to print itself to your screen when you type its name, so you can get some basic information about many functions by simply typing in their name - usually help is a better way!
+
+Let's continue with an example to demonstrate how default arguments work.
+
+
+<<L10Function2, eval = EVAL >>=
+# Use of default arguments in a function, showing alternative modes of calling
+gg4 <- function(a = c(1, 1, 1), b = c(1, 1, 1), f = c(1, 1, 1)){
+  # All arguments have a default value
+   d <- ( a == b & a == f)
+   return(d)
+ }
+a1 <- c(1, 1, 2)
+b1 <- c(1, 1, 2)
+f1 <- c(1, 1, 2)
+gg4(a = a1, b1 ,f1)                                          #1.
+gg4(a1, b1)                                                  #2.
+gg4()                                                        #3.
+gg4(f = f1)                                                  #4.
+gg4(a1, f = f1)                                              #5.
+@
+\subsubsection{Notes}
+\begin{enumerate}
+\item{a is named, all arguments are specified.}
+\item{The f argument has been omitted, so takes the default value.}
+\item{All arguments use the defaults.}
+\item{a, b use defaults.}
+\item{Because b has been omitted, it takes the default value and the name of f must be specified (otherwise it would be confused with b.)}
+
+\end{enumerate}
+Let's have a look at the '...' argument.  Most people call this the 'dots' argument - technically it's an 'ellipsis'. \index{Arguments!dots ...}
+
+If you check the documentation of the function \texttt{lapply}\index{Core functions!lapply()} (which we looked at in Lecture 5, Chapter~\ref{L5}) you will see that its arguments are \texttt{lapply(X, FUN, ...)}. The function function \texttt{lapply}  applies some function (in the function definition it is given the 'dummy' name FUN) to some object 'X'. When you call function \texttt{lapply}, you specify your own function, for example \texttt{mean}.  Now in using  \texttt{mean}, it is possible that you would like to specify some additional parameters -  for example  \texttt{na.rm = TRUE}.  This is where the dots are useful. If you call \texttt{lapply} with any arguments other than the object, X and a function name, the arguments are assumed to be associated with your function.  It is strongly advisable that you name or 'tag' any arguments added to the call by way of the dots. It is a good idea, in general, to name arguments for clarity of coding.
+In other functions with dots, it may be that the function itself has a number of default arguments in addition to a FUN argument. When the function is called, it looks at the calling argument list and first checks to see whether the arguments are in the definition of the called function. If they are not, then they are passed to FUN where they will be used if possible - otherwise a message is returned telling you of 'unused arguments'.
+
+<<L10funcVec, eval = EVAL >>=
+# Here's a function which applies functions to a vector, using ...
+myVecFunc <- function(vec,FUN,...){
+  FUN(vec,...)
+}
+
+x <- sample(1:50,20)
+x[7] <- NA
+x
+myVecFunc(x,sum)                           #  sum returns NA because there is an NA
+myVecFunc(x,sum,na.omit = TRUE)            #  sum returns NA - na.omit not arg
+myVecFunc(x,sum,na.rm = TRUE)              #  sum removes NA, computes sum
+myVecFunc(x,sort)                          #  default sort removes NA
+myVecFunc(x,sort,na.last=TRUE)             #  argument puts NA last in sorted list
+
+@
+
+In R, a function can return any object. If more than one object is to be returned it is done in the form of a list. This example is a little tricky.  Spend some time making sure you understand how it works.
+<<L10Function3, eval = EVAL >>=
+## Here's an example making use of default arguments and showing the effect of
+## different ways of calling the function
+gg5 <- function(a = c(1, 1, 1), b = c(1, 1, 1), f = c(1, 1, 1),text="Comparisons"){
+  # All arguments have a default value
+   d <- (a == b )
+   e <- (a == f)
+   h <- (b == f)
+   LL <- list(text = text, aEqb =d, aEqf = e, bEqf = h)
+   return(LL)
+ }
+a1 <- c(1, 1, 2)
+b1 <- c(1, 1, 2)
+f1 <- c(1, 1, 2)
+mm <- gg5(a1,f=c(1,2,1))
+mm
+@
+
+You can use your own functions in base functions which allow functions as arguments.\index{Core functions!apply()}
+
+<<L10function 4, eval = EVAL >>=
+## User defined functions as arguments of basic functions
+
+# Here is a user defined function
+myF1 <- function(x, y=1){
+  cat("User entered x = ", x, ", y = ", y, "\n")
+
+  mean(x)*y
+}
+bb <- cbind(sample(1:33,10,replace = T),1:10)
+apply(bb, 2, myF1)          # user function with default value of y
+head(bb)
+apply(bb, 2, myF1, y=2)      # User function with y = 2
+
+@
+
+Note the use (for example purposes) of the \texttt{print()} function and the more flexible \texttt{cat()} function.  Both are very useful when printed output from functions is needed.
+
+Click \href{http://cran.r-project.org/doc/manuals/R-intro.html\#Writing-your-own-functions}{\underline{here}} to go to the CRAN web page for more information and examples on writing your own functions.
+
+
+\section{Accessing and using your functions and packages and their data}
+Having created your own useful function, you will want to save it as a file for later use.  Conventionally, files with R code are given the extension .r or .R.  It is usually convenient to give the file the same (meaningful) name as the function.
+
+Suppose you have an R function called birthdays, which does something clever with birthdays and it is stored in a file called birthdays.r.  Subsequently, when you want to use the function, firstly check whether its in your working directory (type dir()\index{Core functions!dir()} to get a listing of files in your working directory). If it's there, you simply use the command \texttt{source('birthdays.r')}\index{Core functions!source()} to load your function into your session's environment, so that it is ready for use. It won't be shown in your script window, so if you want to look at it, you'll have to open it. If it's in another directory, you'll have to change your working directory to that one to source it, or include the path to it in the source command.  Alternatively, if it's not too large, copy it into the working directory and source it there as above.
+
+<<L10birthdaysSource, eval = EVAL >>=
+## Sourcing your own functions
+dir()
+source('../Resources/birthdays.r')
+birthdays("Lisa")
+@
+
+If you create lots of related useful functions to which you want to have ready access, you may want to create a package - which is a special documented container for such 'libraries' of functions. The CRAN web-site has information about creating packages and the standards which should be applied to that activity.

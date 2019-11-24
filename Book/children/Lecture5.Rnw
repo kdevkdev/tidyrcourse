@@ -1,0 +1,348 @@
+<<Lecture5, include=FALSE >>=
+library(tidyverse)
+library(knitr)
+set_parent("../tidyRcourseBook.rnw")
+#opts_chunk$set(fig.align='center', fig.show='hold', fig.height = 4.5, background='ivory', eval = FALSE, echo = TRUE)
+warn = FALSE
+EVAL = FALSE
+@
+
+
+\chapter{Lecture 5 - More dplyr}
+\section*{Tabulation, joining and merging, tidyr and wide form}\label{Lecture5}
+
+\author{Brian Williams $<$\href{mailto:bjw649@gmail.com}%
+{bjw649@gmail.com}$>$}
+
+
+\section{Preliminaries}
+
+Go to the Resources folder and open the courseCode.R file.  Find "Lecture5".
+OPen your Markdown file and add to it as we go through the code in this lecture.
+
+
+<<L5Preliminaries1,  warning = warn , eval =  EVAL >>=
+
+load("../Data/BackPain.Rdata")
+bP <- drop_na(bP)
+@
+
+
+
+\section{More \texttt{dplyr} functions }
+
+We'll begin with an artificial example, in which we firstly demonstrate the function \texttt{bind\_rows()}, in creating a duplicated  row in our example and then we'll use the function \texttt{distinct()} to remove it.
+
+
+\section{\texttt{bind\_rows()}} \index{dplyr::bind\_rows()}
+
+When downloading large data sets, it is not uncommon for duplicate records to be present. (The SAGE data set had a significant number of duplicates in the Indian household data when it was first released.) 
+
+This problem is easily fixed using dplyr's distinct command, which is demonstrated next with a 'toy' example of some household data. We'll use the data frame to merge on household ID (hhID) in another example below.
+\index{Core functions!as.factor()}
+
+<<L5toyDF,  warning = warn , eval =  EVAL >>=
+# Toy example
+
+hhID <- 1:4
+hData1 <- c("X1", "X2", "X3", "X4")
+hData2 <- letters[5:8]
+hhDf <- data.frame(hID = as.factor(hhID),
+                   hD1 = hData1,
+                   hD2 = hData2)
+hhDf
+@
+
+You can think of the \texttt{hhDf} as a mini-example of the 'household data' from the SAGE data set.
+
+We begin by binding a copy of the second row to the bottom of the data frame. The function \texttt{bind\_rows()}\index{dplyr::bindrows()@bind\_rows()} is an easy way to bind rows to a data frame. It will also bind data frames, provided both have the same number of columns.
+
+There is an equivalent function, \texttt{bind\_cols()}\index{dplyr::bindcols()@bind\_cols()} for binding columns to the right of the data frame.
+
+This function will also bind a dataframe, provided each has the same number of rows.
+<<L5BindDupRow,  warning = warn , eval =  EVAL >>=
+hhDf <- bind_rows(hhDf,hhDf[2,])    # bind_rows adds rows of equal length below the data frame
+hhDf
+@
+
+\section{\texttt{distinct()}}\index{dplyr::distinct()} \label{dplyrDistinct}
+
+Now let's extend this sequence a little further by constructing another related dataframe (like the SAGE individual data) to demonstrate the \texttt{left\_join()} function.
+
+The function \texttt{distinct()}\index{dplyr::distinct()} removes \textsl{all} additional duplicated rows in a data frame (i.e. the first row only of a duplicate set is kept).
+
+Let's remove the row we duplicated.
+<<L5RemoveDupRow, warning = warn , eval =  EVAL >>=
+hhDf <- distinct(hhDf)    # Removes the subsequent duplicated rows
+hhDf
+@
+
+
+\section{\texttt{left\_join()}: Merging two data frames}\index{tidyverse!merging data frames}\label{merging2DFs} \index{dplyr:left\_join()}
+
+There is a set of functions in \texttt{dplyr} for merging data frames. Here we'll just demonstrate the \texttt{left\_join()} function. We'll create a second 'toy' data set (individuals) which will relate to the first toy (household) set through the household ID (hhID) variable.
+
+<<L5toy2,  warning=warn , eval =  EVAL >>=
+#
+ID <- 1:15
+hhID <- c(1,1,1,1,1,2,2,3,3,3,4,4,4,4,4)
+iData1 <- LETTERS[1:15]
+iData2 <- letters[12:26]
+
+iDf <- data.frame(id = as.factor(ID),
+                  hID = as.factor(hhID),
+                  iD1 = iData1,
+                  iD2 = iData2)
+iDf
+
+@
+
+Now let's see if we can create a combined data frame in which the individual data frame rows are maintained, but have added to them the variables from the household data frame with values of those variables corresponding to the household listed in the individual's data frame.
+
+We'll firstly try a left\_join using the common household ID (hhID) as the 'key', and then we'll do it without specifying the key.
+
+<<L3MergeWithLeftJoin,  warning=warn , eval =  EVAL >>=
+merged <- left_join(iDf, hhDf, by="hID")
+merged
+merged2 <- left_join(iDf, hhDf)
+merged2
+
+@
+
+There is much more to dplyr than we have time to deal with here. To learn more, have a look at the introductory \href{cran.rstudio.com/web/packages/dplyr/vignettes/introduction.html}{vignette}.
+
+
+
+\section{Tabulation}
+
+Here we introduce a new package based on \texttt{tidyverse} called \texttt{janitor}.  This package simplifies some of the basic tabulation processes that we might be familiar with from other statistical software. (We saw this briefly in Lecture 1)
+
+\subsection{One-way table}
+
+<<L5Tabyls1way,  warning=warn , eval =  EVAL >>=
+library(janitor)
+c1 <- bP %>% 
+      tabyl(country)
+c1
+@
+
+\subsection{Two-way table}
+<<L5Tabyls2way,  warning=warn , eval =  EVAL >>=
+c2 <- bP %>% 
+      tabyl(country, wealthQ)
+c2
+@
+
+...and some people like to use percentages:
+
+<<L5Tabyls2wayPct,  warning=warn , eval =  EVAL >>=
+
+c3 <- bP %>% 
+    tabyl(country, bmi4) %>% 
+    adorn_percentages("row") %>% 
+    adorn_pct_formatting(digits = 2)
+c3
+
+@
+
+
+We'll visualize the bmi4 below.
+<<L5TableRe-order,  warning=warn  , eval =  EVAL >>=
+c3 <- bP %>% 
+    tabyl(country, eduS) %>% 
+    adorn_percentages("row") %>% 
+    adorn_pct_formatting(digits = 2)
+c3
+@
+
+\subsection{Three-way tables using tabyl}
+
+<<L5tabyl3Wayr,  warning=warn  , eval =  EVAL >>=
+c3 <- bP %>% 
+    tabyl(eduS, wealthQ, country) %>% 
+    adorn_percentages("row") %>% 
+    adorn_pct_formatting(digits = 2)
+c3
+@
+
+Notice that there is a problem with the Ghana table.  We'll explore that in the Tutorial.
+
+Various kinds of data counts can also be undertaken with \texttt{group\_by()}, too:
+
+You can get overall numbers directly with \texttt{dplyr} doing something like:
+
+<<L7dplyr2waycount,  warning=warn , eval =  EVAL >>=
+library(knitr)
+bP%>%
+    count(country, agegr) %>%
+  spread(key = agegr, value = n) %>% 
+  as.data.frame() %>% 
+  kable()
+@
+
+....and you can do it with a lot more categorical variables, too:
+
+<<L5dplyr3waycount,  warning=warn , eval =  EVAL >>=
+bP %>% count(country, sex, agegr,  wealthQ) %>% 
+  group_by(country, sex, agegr,  wealthQ) %>% 
+spread(key = wealthQ, value = n)
+
+@
+
+
+...and if you want the percentages:
+<<L5dplyr2waypct,  warning=warn , eval =  EVAL >>=
+bP%>%
+    count(country, agegr) %>%
+    count_to_pct() %>% 
+  as.data.frame() %>% 
+  kable()
+@
+
+
+\section{\texttt{select\_if and summarise\_if}}
+
+There are a group of \texttt{verb\_if} verbs which apply across the columns of a dataframe. (See the cheatsheet or use help.) We have already seen mutate\_if which has been useful for converting character variables to factors. We'll demonstrate the use of  \texttt{select\_if and summarise\_if} in the next couple of chunks.
+
+Let's summarise all the numeric variables in our backPain data frame.
+
+<<L5SummariseIf1,  warning=warn  , eval =  EVAL >>=
+summarise_if(bP, is.numeric,list( 
+             Mean  = mean,
+             Median = median,
+             SD    = sd,
+             IQR   = IQR,
+             MAX   = max,
+             MIN   = min))
+@
+The output is difficult to read and needs some clever tidying. It can all be done in the tidyverse, but we will have to make use of the \texttt{tidyr::gather()} function to convert the summary to \textsl{long form}, which is all explained in the next section. We don't have time to deal with the functions \texttt{tidyr::separate()} and \texttt{tidyr::spread()}, but if you have messy data - you might like to check Hadley's Chapter 9 in his \href{https://r4ds.had.co.nz/index.html}{web version of the book} "R for data science"\cite{Wickham2017}.
+<<L5SummaryNum, warning=warn  , eval =  EVAL >>=
+
+# Modified from Stack Overflow #
+
+bP_sum <- bP_sum %>% gather(stat, val) %>%                     # tidyr
+  separate(stat, into = c("var", "stat"), sep = "_") %>%       # tidyr
+  spread(stat, val) %>%                                        # another tidyr function
+  select(var, min, q25, median, q75, max, mean, sd)            # reorder columns
+bP_sum
+@
+
+Because there may be different numbers of levels, factors are also handled more easily in \texttt{long form}.  Here is the code to do the job, but you'll need to read the next section to see what long form is and how the function \texttt{gather()} works. We'll take a look at code for our bP dataset at the end of the next section.
+
+<<L5SummaryFactors,  warning=warn , eval =  EVAL >>=
+
+bPFactors <- bP %>%
+  select_if(is.factor) %>% 
+  gather(name,value) %>%  # reshape datset
+  count(name, value)      # count combinations
+as.data.frame(bPFactors)  # There' a bug in this!!!!!!!!!!!!
+@
+
+I still prefer to use the core function \texttt{base::summary}!
+
+\section{Wide form and long form - \texttt{tidyr}}\index{Wide form}\index{Long form}
+
+In this section we are going to consider the format in which our data is presented.  The reason for this is that many statistical analyses are not well suited to dealing with data in the standard \textsl{wide} form and many require or are much easier to use in \textsl{long} form. So we would like to explore the reorganization of our data into this form. 
+
+Firstly, though we'll take a minute or so to consider the type of data we have in our dataframe.
+
+\subsection{Some considerations of the type of data}
+
+Data can be represented in many tabular forms and in considering these it is usual to separate the data items themselves into two groups, namely identifier variables and measured variables. 
+
+The identifier variables relate to the study design. The locations, the sex of the individuals and their age are often termed the demographic variables and aside from age, these variables are categorical in nature.  If age groups are defined or age is constrained, then all of these demographic variables are categorical and furthermore, they might generally be assumed to be accurate.   
+
+Measured variables result in a spread of data with arbitrary resolution.  Height, for example might be measured in centimetres with a resolution of 1 centimetre and hence we might see integers running from 80 to 200 or so. Blood pressure measurements would require two values, timed exercises might be measured to the nearest second, etc.  Because another person is involved in the measurement, this data might also be considered to be generally accurate. Although resolution limits the data to discrete values, there will generally be far too many for them to be useful as categories.
+
+There is a third group of variables in survey data; this is the data resulting from multiple choice questions - this data is clearly categorical in nature and more prone to errors.  
+
+In describing individuals, we can use the identifier variables and other socio-economic factors about which questions have been asked. 
+
+In some circumstances, the identifier variables and socio-economic factors could provide an unambiguous description of a subject and in a true database, the primary key variable alone does exactly that. In our data frame, with anonymous data,  how
+
+In broad terms we can think of the identifier variables and socio-economic variables as condition or cause or environment and measured variables as some outcome of these conditions - but these definitions are not clear because many of the causal relationships are circular. Fred smokes because he is depressed, but he is depressed that he can't stop smoking.
+
+This little discussion leads to the fact that it depends on our objectives as to how we group and present data which is correlated in some way. Are we interested in showing differences between countries - differences in disability between wealth groups etc etc.  The choice of objective and the chosen visualizations are left to the presenter.
+
+Let's return to the primary subject here: long and wide form.
+
+\subsection{Converting wide form to long form} \label{widetolong}
+
+ The 'standard' data frame like the Back Pain one we are using, essentially comprises rows which are 'observations' of all data pertaining to one surveyed person. This is called \textsl{wide form}. It is \textsl{tidy} in Hadley Wickham's terms because it has all the observations on one subject in a single row and there is only one variable in each column. 
+
+It turns out that there is an equivalent form of organising the data in terms of identifiers but with the 'measured' variables all in one column  This form of data presentation is called \textsl{long form}. 
+
+In long form, all variables designated as 'measured' are collected into two columns, one in which the column entries identify the variable name of the measurement and in the second column the adjacent entry has the measured value. Thus if we have four measured values, their columns will be removed and replaced by columns called something like 'measurement type' and 'measurement value' and there will be four times as many rows, since we now require a row for each of the measurements for each individual.
+
+You will have noticed that in addition to our 'cutting' height to produce a binned variable height4, bmi has already been binned to bmi4, where the bins conform to standard definitions of body condition. We may use bmi4 as one of a number of factors influencing disability, or we might be interested in the relationship between bmi and disability as they are influenced by some other factors.
+
+Let's have a look at this reorganization. We need to do a bit of tidying up first. Looking ahead, for nice plots, we'll need to scale the waist-height ratio variable \texttt{wHR} by multiplying it by 100.
+
+  We can do easily using the \texttt{tidyr} package, which is included in \texttt{tidyverse}.
+
+The function in the \texttt{tidyr} package which converts wide form to long form is called \texttt{gather()}.
+
+The calling arguments for \texttt{gather()}\index{tidyr::gather()} are straightforward. Firstly, specify the wide form dataframe, Then specify a name for the 'key' variable and another name for the column with the values associated with the keys.  Next, specify the columns to be gathered into the key and value columns. Here is the specification of the columns to be 'gathered' from the documentation:
+
+\begin{quote}
+A selection of columns. If empty, all variables are selected. You can supply bare variable names, select all variables between x and z with x:z, exclude y with -y. For more options, see the dplyr::select() documentation. See also the section on selection rules below.
+\end{quote}
+
+We'll choose disability, bmi and waistHtRatio as the measured variables.
+
+[I was confused for a while by the '-y' option which only applies if you are specifying a sequence of variables (x:z) and want to omit one of the sequence.  See the help pages on \texttt{gather()} for complete definition of arguments and examples.]
+
+There is one other limitation in the selection process and that is that the measured variables must all be of the same type because in their single column in the long data frame, only one type will be allowed.
+
+
+<<L5Chaining_tidyr_commands , eval =  EVAL >>=
+bPgather <- bP %>%              
+             mutate( wHR=100*wHR) %>%                           # Multiply wHR by 100
+             gather(key = variable, value = value, disability, bmi, wHR)      # Convert to long form
+  
+@
+
+The dataframe \texttt{bPgather} is large so take a quick look at it by clicking on its name in the enviroment pane.
+
+Now let's see what ggplot can do with a long form dataframe!
+
+<<L5ggplotEx1 , eval =  EVAL >>=
+library(ggplot2)
+p <- ggplot(bPgather, aes(x = interaction(country,sex), y = value, colour=variable))
+p <- p + geom_boxplot()
+p
+@
+
+<<L5ggplotEx2 , eval =  EVAL >>=
+library(ggplot2)
+p <- ggplot(bPgather, aes(x = country, y = value, colour=variable))
+p <- p + geom_boxplot()
+p
+@
+
+ 
+ <<L5ggplotEx3 , eval =  EVAL >>=
+library(ggplot2)
+p <- ggplot(bPgather, aes(x = eduS, y = value, colour=variable))
+p <- p + geom_boxplot()
+p
+@
+
+
+<<L5ggplotEx4 , eval =  EVAL >>=
+library(ggplot2)
+p <- ggplot(bPgather, aes(x = wealthQ, y = value, colour=variable))
+p <- p + geom_boxplot()
+p
+@
+
+<<L5ggplotEx5 , eval =  EVAL >>=
+library(ggplot2)
+p <- ggplot(bPgather, aes(x = physical, y = value, colour=variable))
+p <- p + geom_boxplot()
+p
+@
+
+
+
+%\printindex

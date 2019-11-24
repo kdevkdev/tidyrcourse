@@ -1,0 +1,73 @@
+---
+title: "Q3a"
+author: "Brian Williams"
+date: "23 March 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+## YOU MUST CHOOSE ANOTHER INDICATOR!!
+```{r}
+library(WDI)
+WDIsearch(string='gnp', field='indicator', cache=NULL)
+gnp <- WDI(country = "all" ,
+                indicator = 'NY.GNP.PCAP.PP.CD',
+             start = 2017, end = 2017, extra = FALSE, cache = NULL)   #GNP
+names(gnp)[3] <- "gnpPcap"
+head(gnp)
+```
+
+```{r}
+library(rworldmap)
+library(ggplot2)
+library(scales)
+library(dplyr)
+
+data(countriesLow)                                                    #1.
+class(countriesLow)                                                   #1.
+head(countriesLow@data)
+wmap_df <- fortify(countriesLow)  # Converts  to a data.frame
+head(wmap_df)
+names(wmap_df)[6] <- "country"
+head(wmap_df)
+```
+
+
+
+```{r}
+gnp$country[20] = "United States of America"
+gnp$country[209] = "Russia"
+
+map.df = merge(wmap_df, gnp)
+map.df <- left_join(wmap_df, gnp, by = "country")   
+```
+
+
+```{r}
+head(map.df)
+map2 <- arrange(map.df,order) # sort to original polygon order
+
+theme_opts <- list(theme(panel.grid.minor = element_blank(),
+                         panel.background = element_blank(),
+                         plot.background = element_rect(fill="lightblue"),
+                         panel.border = element_blank(),
+                         axis.line = element_blank(),
+                         axis.title.x = element_blank(),
+                         axis.title.y = element_blank(),
+                         plot.title = element_text(size=22)))            #4.
+
+pp <- ggplot(data = map2, aes(x=long, y=lat,group=group, fill=gnpPcap)) +
+#pp <- ggplot(data = map2, aes(x=long, y=lat, fill=gnp)) +
+    scale_fill_gradientn(colours = rainbow(7),na.value="white") +
+#                         labels = format(breaks))+
+#                         breaks = breaks, labels = format(breaks))+
+    coord_fixed() + 
+    geom_polygon(colour="white")  
+pp                                                                       #5.
+
+```
+The map needs a title!
+
+

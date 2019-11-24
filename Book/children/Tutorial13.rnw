@@ -1,0 +1,312 @@
+
+
+<<Tutorial13, include=FALSE>>=   
+library(knitr)
+set_parent("../tidyRcourseBook.rnw")
+evalChild = FALSE
+@
+
+
+
+\chapter{ Tutorial 13 - Git, GitHub and R packages}\label{T13}\index{Git}\index{GitHub}\index{Packages!creating}
+
+\author{Brian Williams $<$\href{mailto:bjw649@gmail.com}%
+{bjw649@gmail.com}$>$}
+
+\section{Preliminaries}
+
+
+
+Go to the courseCode folder and open Tutorial13.R. Save As in the myRcode folder.
+
+\textbf{Set the working directory to that of the source file}.
+
+In this Tutorial we are going to use Git and the associated GitHub.
+
+We need to install GitHub. Doing so simultaneously installs Git and also (for Windows environments) the command-line utility Git Bash.
+
+Go to the \href{https://GitHub.com/}{GitHub website}. You will need to sign up (No cost!). Then follow the instructions to set up your account. \href{https://help.GitHub.com/articles/set-up-git}{This site} gives you detailed help for the setup of Git - but you can probably do without it for the moment.
+
+In order to create a very minimal package, we'll use two packages: \texttt{devtools}\index{Package!devtools} and \texttt{roxygen2}\index{Package!roxygen2}.  Install these from CRAN.
+
+\section{Introduction}
+
+In Lecture 12 Chapter~\ref{L12} we saw that one of the recommended methods for collaborating to produce reproducible research is to use GitHub and that a preferred way of presenting maintainable reproducible research is to create a package for data, documentation and the literate code.  In this Tutorial, we'll introduce Git and GitHub and also create a minimal package.  Be aware that this is only enough to get you started on these two topics.  For much more information on Git you can freely download the book \emph{Pro Git}\cite{Chacon2014} by Chacon and Straub from \href{http://git-scm.com/book/en/v2}{here}, and for a brief account in relation to package development, Hadley Wickham's book, \emph{R packages}\cite{Wickham2015b} is also freely available and has a nice introductory chapter here: \href{http://r-pkgs.had.co.nz/git.html}{http://r-pkgs.had.co.nz/git.html} on Git and GitHub.  [The whole book is accessible at \href{http://r-pkgs.had.co.nz/}{http://r-pkgs.had.co.nz/}.]
+
+\section{Git Basics}\index{Git!basics}
+
+So, what are Git and GitHub?
+
+Git lives on your computer and GitHub lives in the cloud. The two interact very nicely to give you good version control and backup which is independent of your computer. (One more independent backup and you should be "safe".) 
+
+GitHub repositories are free.  Unless you pay for a private repository, GitHub repositories are publicly available. The GitHub user community strives to develop freely available software, built collaboratively. We haven't time to go into the details here, but GitHub is an excellent book-keeper of parallel software development where a number of contributors may experiment with  different approaches using a procedure called \href{https://en.wikipedia.org/wiki/Fork_(software_development)}{\texttt{forking}}. 
+
+Is it a good thing to make your ideas so freely available? Remember the famous quotation from Sir Isaac Newton:
+\begin{quote}
+ 'if I have seen further it is by standing on the shoulders of giants'.
+ \end{quote}
+One could argue on this basis that sharing knowledge is the essence of the best science. 
+
+
+Git is a very efficient version control system which backs up programs under development and allows re-creation of the software at any stage of its development.  Essentially, after the initial creation of files in a Git \emph{repository (repo)}, Git incrementally stores all the changes you have made to the original document.  It can re-apply these changes to the original document in sequence up to whatever stage you might choose, thus giving you the capacity to restore your program at any stage of its development.
+
+Being local (entirely on your own computer) you may wish to develop some PhD ideas on your own and then when your package is complete, with clearly defined ownership and authorship, you can push it to GitHub for the rest of the world to see and admire!
+
+
+\subsection{Git operations}
+
+In Git we undertake a sequence of commands and a file goes through different states as these commands are executed.
+
+Firstly, however, we need to tell Git to track the progress of the file. The Git command is \texttt{add}\index{Git!add} and we have done this already in RStudio when we \texttt{added} the two code files. Once a file has been added to Git, we recognise the file as being in a number of states:
+
+\begin{enumerate}
+\item{ A new file or a changed file is in the Git \emph{working directory} - we call this a \emph{modified file}.}\index{Git!modified file}
+\item{A \emph{modified file} is marked to be committed - it has become a \emph{staged file} and is held in the \emph{staging area}.}\index{Git!staged file}
+\item{The \emph{staged files} are \emph{committed} (i.e. a snapshot is taken of the system, links are created to staged files and copies of all the staged files are added to the Git repository (database) which then contains \emph{committed files}. }\index{Git!committed file}
+
+\begin{figure}[!ht]
+\graphicspath{{./images/}}
+\includegraphics[width=8cm, height = 8cm]{GitHub2.jpg}
+\caption{GitHub processing.}
+\label{fig:pch}
+\end{figure}
+
+\end{enumerate}
+
+When a repository is opened, Git copies files to the working directory\index{Git!working directory} from the database and these may be modified, then staged and then committed.
+
+\subsection{GitHub}
+
+GitHub allows you to store in the cloud and you can work locally using Git.  R packages can be developed using Git and Hadley Wickham's \texttt{devtools} package.  GitHub allows collaborators to work in a controlled way with a shared repo.
+
+Typically, you work locally on your computer in an R project, using Git and then when you are ready to share your package with the world, you \texttt{push} the entire project to GitHub.  There, anybody can access it and install the package directly from GitHub using the command:
+
+\texttt{devtools::install\_github("GitHubUserName/packageName")}.
+
+R packages can be developed using Git and GitHub and Hadley Wickham's \texttt{devtools} package has the capacity to convert a GitHub repo directly into a fully fledged R package.
+
+Git and GitHub useage is integrated into \texttt{Projects} in RStudio.
+
+So let's do it! Firstly, we'll create a RStudio project, but we will get a couple of files ready first. Here's the word-finding script we looked at in Tutorial~\ref{T9}.
+
+
+<<T12Script1, eval = evalChild>>=
+
+   # read in the words from the file, into a vector of mode character
+
+   txt <- scan("../Data/tf.txt","")
+   tl <- length(txt)
+   cat("The text file was read and there are ", tl, " words.")
+   wl <- list()      # Create a list called wl with no elements
+   for (i in 1:tl) {
+      wrd <- txt[i]  # i-th word in input file
+      wl[[wrd]] <- c(wl[[wrd]],i)
+   }
+print(wl)
+
+@
+
+Here it is in a functional form:
+
+<<T12findWords1, eval = evalChild>>=
+
+findWords1 <- function(fn = "tf.txt") {
+   # read in the words from the file, into a vector of mode character
+  pfn <- paste("../Data/", fn, sep = "")
+  cat("pfn:  ",pfn)
+   txt <- scan(pfn,"")
+   tl <- length(txt)
+   cat("The text file was read and there are ", tl, " words.")
+   wl <- list()      # Create a list called wl with no elements
+   for (i in 1:tl) {
+      wrd <- txt[i]  # i-th word in input file
+      wl[[wrd]] <- c(wl[[wrd]],i)
+   }
+   return(wl)
+}
+
+@
+
+Let's run it to see if it still works! (and remind ourselves of what it does.)
+
+<<T12findWords1Test, eval = evalChild>>=
+findWords1("tf.txt")
+@
+All is well. Let's now get another of Matloff's word finders:
+
+
+<<T12findWords2, eval = evalChild>>=
+findWords2 <- function(fn = "tf.txt") {
+   # read in the words from the file, into a vector of mode character
+  pfn <- paste("../Data/", fn, sep = "")
+  cat("pfn:  ",pfn)
+   txt <- scan(pfn,"")
+   words <- split(1:length(txt), txt)
+   return(words)
+}
+
+@
+
+Let's test this one, too.
+
+<<T12findWords2Test, eval = evalChild>>=
+findWords2("tf.txt")
+@
+Great. Now we have two code files and a data file for our project. The two code files (\texttt{findWords1.R} and \texttt{findWords2.R}  are already in the Code folder in your R\_Course folder, and the data file \texttt{tf.txt} is in the Data folder.
+
+Go to [File->New Project] - select 'New Directory', then select 'R Package', then:
+
+\begin{enumerate}
+
+\item{enter a package name of \underline{your choice - something unique!},}\label{gitName1}
+\item{tick the box 'Create a git repository' and}
+\item{tick 'Open in a New Session'.}
+\item{Browse to choose a suitable sub-directory and}
+\item{then add the two R code files.}
+\item{click on Create Project.}
+
+\end{enumerate}
+
+Now we see a new RStudio window\index{Git!in RStudio} in which there is an extra Tab for Git in the pane in the top right corner and the File tab in the botttom right corner shows our code files. Before we go any further with this, let's take a quick look at the project folder - if you've forgotten where you put it, it will now be in the header of the Files Tab in the bottom right pane of RStudio's window.  Open Windows Explorer and find the project folder. This is the one you named in Step~\ref{gitName1} of the numbered process above and we will also refer to it as Git's \emph{Working Directory}.
+
+If you can't see a file called \texttt{.gitignore}\index{Git!.gitignore}, in the Working Directory, go to the \emph{View} menu and tick the box, 'Hidden items'. Now, our interest will focus on the following folders and files, which have been automatically generated for our package development:
+
+\begin{itemize}
+\item{.gitignore - see below.}
+\item{R - a folder containing the source code}
+\item{DESCRIPTION - see below}
+\item{NAMESPACE - see below}
+\end{itemize}
+
+This list should not be seen as exclusive, other important folders you might expect to see in packages include:
+
+\begin{itemize}
+\item{data}
+\item{tests}
+\item{vignette}
+\item{demo}
+\end{itemize}
+
+.. they are all very important and improve the quality of your package....but we won't deal with these here. (See Hadley Wickham's book \cite{Wickham2015b} or website: \href{http://r-pkgs.had.co.nz/}{http://r-pkgs.had.co.nz}.)
+
+
+Now, let's get back to those files in the Working Directory. They are standard in a Git working directory and have been set up by RStudio for us.
+
+\subsection{The \texttt{.gitignore} file}
+Git will comment on files in the working directory which have not been added.  Since some of our compiling and other processes will generate files which we don't want Git to deal with, we can name them in a file called \texttt{.gitignore}\index{Git!.gitignore}. RStudio sets this up for us with some standard intitial entries.
+
+\subsection{The R folder in the Git Working directory}
+Git can be used for any computer language or developing document.  RStudio gave us an R folder on the assumption that our source documents would be R code (or literate R Code). We will add some special comments to these files soon, in order to provide 'nice' documentation when \texttt{help(package= "packageName")} is used.
+
+\subsubsection{Package documentation for the R file}
+This is done using the \texttt{roxygen2} package.  Basically, all that is required from us is to have the library loaded and then  modify the function with special comments and a few key words. Here's the listing for a modified version of findWords2() with the documentation added. [Our package function requires the user to specify the path to the data file.]
+
+%\lstloadlanguages{R}
+\begin{lstlisting}
+#' findwords2: elegant improvement on findwords1
+#'
+#' @param pfn - a text file
+#'
+#' @return A list of the words and their sequence number in the file
+#' @export
+
+findWords2 <- function(pfn = NULL) {
+  # read in the words from the file, into a vector of mode character
+  #Matloff p126 (Modified)
+  cat("pfn:  ",pfn)
+  txt <- scan(pfn,"")
+  words <- split(1:length(txt), txt)
+  return(words)
+}
+
+\end{lstlisting}
+
+The \texttt{roxygen2} comments begin with the \# symbol, followed by a single quotation mark, '. this is followed by a \textbf{single space} and then a special \texttt{roxygen2} label beginning with the ampersand symbol, @.  It will help to take a look at the help page that this generates.  You need to install the package for this.  Here's how:
+
+<<T12gettestBW1, eval = evalChild>>=
+devtools::install_github("bjw649/testBW1")
+@
+We'll get back to this later, but now we can have a look at what the effect of our strange comments are when the package \texttt{roxygen2} deals with them.
+
+<<T12FuncDocs, eval = evalChild>>=
+library(testBW1)
+help(findWords2)
+@
+
+If we seek more general help for the package, with \texttt{help(package = "packageName")} the DESCRIPTION folder will be accessed.
+
+
+\subsection{ The DESCRIPTION folder}\index{Packages!DESCRIPTION folder}
+This is \emph{really} important, no matter what you intend doing with your package. If it is just for personal use,  two years' after you last used it, you'll need to look at the description to remember what it was all about!
+
+\begin{lstlisting}
+
+Package: testBW1
+Type: Package
+Title: Test Package Including Two Word-count Functions
+Version: 0.1.0
+Authors@R: person("Brian", "Williams", email = "bjw649@gmail.com",
+           role = c("aut", "cre"))
+Description: This is a test example incorporating two simple functions which do
+    word counts.
+License: GPL-3
+LazyData: TRUE
+RoxygenNote: 5.0.1
+
+\end{lstlisting}
+
+This uses a different format again, but it is fairly easy to see what is going on if you look at the help file at the same time:
+
+<<T12packHelp, eval = evalChild>>=
+
+help(package="testBW1")
+
+@
+If on the help page you click on its link to DESCRIPTION file, you will see more of the detail we have included.  For more information about how to format the DESCRIPTION folder take a look at the Hadley Wickham page: \href{http://r-pkgs.had.co.nz/description.html}{http://r-pkgs.had.co.nz/description.html}.
+
+
+\subsection{The NAMESPACE folder}\index{Packages!NAMESPACE folder}
+This is not important for a personal package, but important if you want to submit the package to CRAN or Bioconductor.  It is more complicated than we have time to discuss once again see the book \cite{Wickham2015b} and webpage \href{http://r-pkgs.had.co.nz/namespace.html}{http://r-pkgs.had.co.nz/namespace.html}.
+
+\section{Creating the package}
+In the first instance we can create the package directly from our project in RStudio.  With \texttt{devtools} installed its very simple.
+
+\begin{enumerate}
+\item{We need to ensure that we have opened the project in RStudio, that we have set the directory to the folder containing the .Rproj file and that \texttt{devtools} is loaded.}
+\item{Once that's all in place and our files have all been prepared as described above, we go to the Build tab in the top right pane of RStudio and check to see whether everything has been committed.}
+\item{If not we can click on the boxes to stage modified files and then click on commit to store all the changes in the Git database.}
+\item{Next we click on the Build tab in the same pane and then on the 'Build and Reload' button beneath it.}
+\item{All being well, our package is created (or updated) and the new package is loaded.}
+\end{enumerate}
+
+Time to test, but note that if you have the \texttt{testBW1} package loaded along with your own new package, you will need to use the :: notation to ensure that you are testing your own functions and not those in the \texttt{testBW1} package.
+
+\section{Pushing our local repo to GitHub}\index{Git!push local repo to GitHub}
+
+To push this package to our GitHub site we need to have set up a repo on GitHub with the same name as our package/project. It is straightforward.  If you do a fresh login to GitHub, you'll immediately be offered the option of creating a new repo. Do so making sure to use the same name as your RStudio project/package.
+
+Follow the instructions.
+
+Go to the repo and note its URL.
+
+Then, back to RStudio, where You will see that the Git tab offers a 'Push' button. Before you push it, you'll need to tell Git where you want to push it to. SO...
+
+\begin{enumerate}
+\item{Check that you are still in the project directory.}
+\item{Go to the Tools menu in RStudio and select Shell.}
+\item{Enter the following Shell command: \texttt{git remote add origin NotedRepoURL} Where NotedRepoURL is the one you noted above! It will be something like: \texttt{https://GitHub.com/UserName/packageName}.}
+\item{Exit from the shell.}
+\end{enumerate}
+
+Now you can press the Push button and push it! You'll need your GitHub Username and password to complete the push. You can go back to the GitHub project site and see all your project files and folders have been stored there (securely!).
+
+\section{Creating our package from Github}\index{Packages!create in GitHub}
+Remember that your free GitHub site is publicly accessible and so all your friends can install your great new package.  All they have to do is install and load  \texttt{devtools} and then enter the following command:
+
+<<T12installGitHUb, eval = evalChild>>=
+devtools::install_github("YourGitHubUserName/YourRepoName")
+@
+
+There's much more to Git and GitHub - they are not that hard to use from RStudio and once you become accustomed to using them , you'll find they are a very useful means of backup and collaboration.
+
+%\printbibliography

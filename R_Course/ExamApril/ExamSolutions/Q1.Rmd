@@ -1,0 +1,95 @@
+---
+title: "Q1"
+author: "Brian Williams"
+date: "19 March 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+## (1)  Put your exam code in the author space above
+The data analysed in this folder is a new backpain dataset.  Descriptions of the variables are listed in the file Variables_BackPain2.xlsx in the ExamResources folder. There is another file, called BACKPAIN_EXTRACT_GenericIndividualQ.pdf, which you may also find useful.
+The data is in a Stata data file called BackPainData_1.dta, which is located in the ExamData folder.
+
+
+Here are the variables summarised.
+
+```{r readData, echo = FALSE, message = FALSE}
+library(tidyverse)
+library(haven)
+df <- read_dta("../ExamData/BackPainData_1.dta")
+summary(df)
+```
+
+Take a look at the summary. There are a few un-helpful variable names, so make the following changes.
+
+(2) Rename the variables:
+
+1. quintile_c to wealthq
+2. heightvalid to height
+3. screen12
+4. q4008
+5. q4009 (See questionaire BACKPAIN_EXTRACT....pdf in ExamResources)
+
+We will focus on the following 11 categorical variables. .:
+
+1. residence
+2. sex
+3. country
+4. wealthq (changed from quintile_c) 
+5. agegr
+6. educ4gp
+7. bmi_4gp
+8. drinkYN
+9. arthritis
+10. depression
+11. eworked
+
+When the df is loaded these 11 variables are listed as numeric.  
+
+(2) Change the 11 listed variables to factors.
+
+(3) The coding of the level names in these factors is not self-explanatory, so referring to the Variables_BackPain2.xlsx file, give concise, useful names to the levels of the 11 factor variables in the list.
+
+(4) Add a summary with the new names and levels to this document.
+
+
+(5) Prepare some boxplots and histograms
+
+(5) Prepare some tables highlighting associations between any groupings of the variables above that you think will be of interest. You should prepare at least 6 groups and no more than 12. A three-way table is a single group and a two-way table is a single group. Do not use four-way grouping, please! Comment **briefly - one sentence** on each table.
+
+(6) Prepare a scatter-plot of WHOQoL vs BPburden, with a linear smoother. Use the alpha transparency parameter in the plot. Repeat with WHOQoL vs your re-named screen12.
+Comment on the comparison.
+
+(7)
+
+
+Let's select some variables of particular interest:
+
+```{r selectVariables}
+library(dplyr)
+LM1 <- lm(screen12~BPburden, data = df)
+
+```
+
+```{r}
+p <- ggplot(df, aes(x=BPburden, y = WHOQoL))+
+  geom_point(alpha = 0.1)+
+  stat_smooth(method = lm, lwd = 2)
+p
+```
+
+
+```{r}
+df <- df %>% mutate(sex = as.factor(sex)) %>% 
+              mutate(depression = as.factor(depression)) %>% 
+              mutate(eworked = as.factor(eworked)) %>% 
+              mutate(country = as.factor(country)) %>% 
+              filter(complete.cases(sex, depression, eworked, country, bmi))
+p <- ggplot(df)+
+  geom_boxplot(aes(x = eworked, y = bmi, fill = sex)) + ylim(0,70) +
+  facet_grid(country~depression)
+p
+```
+

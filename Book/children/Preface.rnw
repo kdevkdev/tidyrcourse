@@ -1,0 +1,58 @@
+%Template for children
+% Change chunk name to chapter title
+% ALl chunk names to be preceded by Tn or Ln  (where n is chapter or tutorial number)
+
+
+<<Preface0, include=FALSE>>=   
+set_parent("../tidyRcourseBook.rnw")
+evalChild <- FALSE
+@
+
+
+\chapter{Preface}
+
+\section{Original Preface by Brian Williams}
+
+\author{Brian Williams $<$\href{mailto:bjw649@gmail.com}%
+{bjw649@gmail.com}$>$}
+
+This set of notes is intended as an introduction to the use of R for Public Health Students.  These notes are themselves an example of what can be achieved using one of the R User interfaces (RStudio) making use of the R package \texttt{knitr}. 
+
+This is \textsl{not} a course on statistics - the expectation is that students will already have undertaken statistics courses (or be about to do so).  The emphasis here is on using a consistent subset of tools for preparing data for analysis and taking a preliminary look at it using tabulation of aggregates and visualization. The course will largely work with Hadley Wickham's 'tidyverse' packages. 
+
+The course is limited to 13 Lectures of around one to two hours duration and 13 tutorials of similar length and as a consequence, there are limitations on the amount of material which can be covered.  I have tried to include appropriate references for further reading wherever discussion has been limited. 
+
+Apart from the broader basics of R, I have included a view of the future of data science where it might be of interest to researchers in the Public Health. 
+
+I have introduced the idea of Markdown in earlier courses, when RStudio converted it to nice HTML documents, but now newer versions of RStudio have made conversion to MS Word documents straightforward. 
+
+To my way of thinking, the ease with which documentation of analytical processes can be maintained now, mandates that it should always be done.  Doing so aids the researcher in on-going recording of his or her own thinking, methodology, experimentation etc, and it is especially valuable when there are several approaches to choose from, requiring comparisons across perhaps complex procedures.  It is also an excellent way of providing fully accessible information for supervisors or collaborators.  Ultimately, this on-going, easy-to-do rigorous documentation provides a ready made basis for publication of completed research projects.
+
+That said, with the rapidly changing experimental and analytical technology (changing data bases, analytical software etc), \emph{maintenance} of research in reproducible form is a significant issue.  My own view is that given the rapid development of research in general, and the potential maintenance work-load, that we should aim for 'reproducibility' to be maintained for around five years. In some very actively developing areas, three years may be more sensible, while in other more stable areas, a longer time-frame may be manageable without undue effort.  Maintaining reproducibility of software in cutting edge development will always require additional time and often may appear to be time spent for no productive outcome.
+
+Bearing in mind that the intended audience of this course is not a group of computer scientists and some may have no experience in programming, I have taken a rather infomal approach trying to introduce examples early in the course which would motivate the audience, rather than beginning formally with an extensive set of definitions of language as one might find in a computer science text book. The \href{https://cran.r-project.org/doc/manuals/r-release/R-intro.pdf}{'An Introduction to R'} on the CRAN web page is an excellent more formal presentation if you prefer that approach.  I would like to think that these notes and that document complement one another. The draft 'R Language Definition' on the CRAN site is still more formal.
+
+For those with no experience in R or programming, there may seem to be an overwhelming amount of information to comprehend. I can only advise you to not panic, relax, and don't worry about things you don't yet fully understand.  \emph{You cannot hope to be fully conversant in R in two weeks}! (I'm certainly not after dabbling for more than 10 years!) 
+
+One of the most important lessons in the course will be to learn how to find answers to your R questions. Modern programmers work with multiple languages, editors, protocols, operating systems etc and cannot be expected to remember function arguments, specialised syntax etc. The real skill is being able to efficiently find out how to do something -  not remember how to do everything!
+
+R too, has many thousands of functions.  Google usage is fundamental. There are a number of forums on the web which are generally very friendly and supportive if you are struggling with a problem. (Nabble, Stack Overflow are a good start.) You do need to follow forum protocols - almost all require a minimal example of your problem.
+
+There are many other sources of examples of R code, most of which you will find using Google. Don't forget the CRAN \href{https://cran.r-project.org/}{pages} - there are a lot of resources there! 
+
+The notes are a 'work-in-progress'.  They have largely been derived from my own work using R over the past ten years or so, and then cast into a teaching form in workshops and classes in the Epidemiology and Global Health Unit in the Department of Public Health and Medicine at Umeå University in the last couple of years.
+
+I apologise for 'glitches' in the text (there will be many), but at the same time, I am hopeful that the notes (and classes) will provide a good basis for your venturing into R.
+
+The notes will probably continue development in the next couple of years - look out for updates in the GitHub repo. \\
+
+
+Brian Williams
+ 
+ 
+March 2019.
+
+
+\section{2nd Preface by Kaspar Meili}
+
+Sadly, due to other commitments, Brian is no longer able to continue the development of the course files to the same extend as he used to. Luckily he agreed to let me help him maintaining the course and as a first step I uploaded the material to GitHub. We decided to publish the under the Creative Commons Attribution 4.0 International License CC BY 4.0. \href{https://creativecommons.org/licenses/by/4.0/}. 

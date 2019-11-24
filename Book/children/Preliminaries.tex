@@ -1,0 +1,142 @@
+\documentclass[titlepage]{book}
+\usepackage[]{graphicx}\usepackage[]{color}
+% maxwidth is the original width if it is less than linewidth
+% otherwise use linewidth (to make sure the graphics do not exceed the margin)
+\makeatletter
+\def\maxwidth{ %
+  \ifdim\Gin@nat@width>\linewidth
+    \linewidth
+  \else
+    \Gin@nat@width
+  \fi
+}
+\makeatother
+
+\definecolor{fgcolor}{rgb}{0.345, 0.345, 0.345}
+\newcommand{\hlnum}[1]{\textcolor[rgb]{0.686,0.059,0.569}{#1}}%
+\newcommand{\hlstr}[1]{\textcolor[rgb]{0.192,0.494,0.8}{#1}}%
+\newcommand{\hlcom}[1]{\textcolor[rgb]{0.678,0.584,0.686}{\textit{#1}}}%
+\newcommand{\hlopt}[1]{\textcolor[rgb]{0,0,0}{#1}}%
+\newcommand{\hlstd}[1]{\textcolor[rgb]{0.345,0.345,0.345}{#1}}%
+\newcommand{\hlkwa}[1]{\textcolor[rgb]{0.161,0.373,0.58}{\textbf{#1}}}%
+\newcommand{\hlkwb}[1]{\textcolor[rgb]{0.69,0.353,0.396}{#1}}%
+\newcommand{\hlkwc}[1]{\textcolor[rgb]{0.333,0.667,0.333}{#1}}%
+\newcommand{\hlkwd}[1]{\textcolor[rgb]{0.737,0.353,0.396}{\textbf{#1}}}%
+\let\hlipl\hlkwb
+
+\usepackage{framed}
+\makeatletter
+\newenvironment{kframe}{%
+ \def\at@end@of@kframe{}%
+ \ifinner\ifhmode%
+  \def\at@end@of@kframe{\end{minipage}}%
+  \begin{minipage}{\columnwidth}%
+ \fi\fi%
+ \def\FrameCommand##1{\hskip\@totalleftmargin \hskip-\fboxsep
+ \colorbox{shadecolor}{##1}\hskip-\fboxsep
+     % There is no \\@totalrightmargin, so:
+     \hskip-\linewidth \hskip-\@totalleftmargin \hskip\columnwidth}%
+ \MakeFramed {\advance\hsize-\width
+   \@totalleftmargin\z@ \linewidth\hsize
+   \@setminipage}}%
+ {\par\unskip\endMakeFramed%
+ \at@end@of@kframe}
+\makeatother
+
+\definecolor{shadecolor}{rgb}{.97, .97, .97}
+\definecolor{messagecolor}{rgb}{0, 0, 0}
+\definecolor{warningcolor}{rgb}{1, 0, 1}
+\definecolor{errorcolor}{rgb}{1, 0, 0}
+\newenvironment{knitrout}{}{} % an empty environment to be redefined in TeX
+
+\usepackage{alltt}
+\newcommand{\SweaveOpts}[1]{}  % do not interfere with LaTeX
+\newcommand{\SweaveInput}[1]{} % because they are not real TeX commands
+\newcommand{\Sexpr}[1]{}       % will only be parsed by R
+
+
+\usepackage{bwstyle}
+
+\title{\huge \textbf{ R- a tool for statistical analysis }\vspace{+1cm}  }
+\subtitle{A modern introduction using tidyverse}
+\author{{\LARGE \emph{Brian Williams}}\vspace{+1cm} \\
+ Epidemiology and Global Health Unit,\\
+ Department of Public Health and Medicine,\\
+ Umeå University \vspace{+8cm}}
+ 
+
+\date{\today}
+
+
+
+\begin{document}
+%Template for children
+% Change chunk name to chapter title
+% ALl chunk names to be preceded by Tn or Ln  (where n is chapter or tutorial number)
+
+
+
+
+
+\chapter*{Preliminaries}
+
+\author{Brian Williams $<$\href{mailto:bjw649@gmail.com}%
+{bjw649@gmail.com}$>$}
+
+\section*{Installing R}
+Download and install R from the  \href{http://www.r-project.org/}{R Homepage (http://www.r-project.org/)}.
+
+Choose your computer, then operating system.  Use the 'base' install for Windows.
+
+Use default values throughout the install.
+
+While you are at the web site, you will see links to 'CRAN' -  go there and browse around and see what documentation is available.  You'll find lots of examples, tutorials etc.
+
+\section*{Installing Rstudio}
+\begin{enumerate}
+\item{Go to the \href{http://www.rstudio.com/products/rstudio/download/}{Rstudio download page (http://www.rstudio.com/products/rstudio/download/)}.}
+\item{When you get to the page, look for your computer/operating system under the heading 'Installers for ALL platforms'.  Click on yours.}
+\item{You can choose a 'mirror' location for a download of the installer .exe file.}
+\item{When the file is finished downloading. Click on it.}
+\item{On a Windows platform you will be asked whether it's OK for the program to make changes to your computer. Click 'Yes'.}
+\item{The installer opens up - close other applications, click 'Next'.}
+\item{Accept the default settings - click 'Next' twice more then click 'Finish'.}
+\end{enumerate}
+
+An RStudio icon should now be available on your Desktop or Start menu (or equivalent - depending on your operating system). You can open RStudio by double-clicking on the icon.
+
+The program will normally associate with files with extensions (.r, .R, .Rmd, .Rnw) where the case of the letters does not matter. Some software, (EndNote, for example), may also like to use one or more of those extensions, in which case you may like to choose the default?). You can change associations with file types by right clicking on a file with an extension of interest and selecting 'Properties'. The 'General' tab for Properties provides an opportunity to change the file association.
+
+\section*{Getting the Course materials from GitHub}
+
+The course material is in the R\_Course\_ folder. 
+
+
+\begin{enumerate}
+\item{\textbf{Resources} contains R\_Course\_Notes.pdf, miscellaneous resources, reference material etc. (Additional material may be added from time to time.)}\label{ResourcesFolder}
+\item{\textbf{Data} contains the (moderate sized) datasets accessed by the code used in the course. (Some larger datasets will be accessed directly via the web.)}\label{DataFolder}
+\item{\textbf{myR\_Code} will contain code you are developing during the course in tutorials etc.}\label{myCodeFolder}
+\end{enumerate}
+
+Now: 
+
+\begin{enumerate}
+
+\item {\textbf{Open RStudio}, by clicking on the icon.}
+
+\item{From the File menu in RStudio, \textbf{open Lecture1.R} in the folder Resources/courseCode/. (Select [File -> Open File...].) In these notes, menu items will be indicated in square brackets with arrows as shown in the previous sentence.  The file \texttt{courseCode.R} contains all of the R code used in the notes.  Each Lecture and Tutorial is clearly identified. } 
+
+\item{Open Lecture1.R. (Double click it). }
+
+\item{Save this file in your myCode folder as Lecture1.R   [File-> Save As ....]}
+
+\item{Use mouse/menu to \textbf{set the working directory}\index{RStudio!setting working directory} to the file location: [Session -> Set Working Directory -> To Source File Location]. You will see in the Console Pane (bottom left of the screen, see Figure~\ref{fig:Screenshot}) that the R function for this is \texttt{setwd()}\index{Core functions!setwd()}.   \textbf{This is an important step!}  Without it, R won't be able to find the data files, which have all been put in the Data folder which is found relative to the location of your Code folder.}
+
+\end{enumerate}
+
+The myCode folder is for your use.  I'll refer you to it from time to time. You can try code out in this folder and because of the file structure we have here, you'll be able to  access data in the Data folder in exactly the same way as we will do in class from the Code folder. If it get's too cluttered, create a Workspace folder in the R\_Course folder.
+It will also be most convenient for you to put the new code for your assignments and the final exam in new folders called something like  'myAssignments' and 'myExamfolders' in the R\_Course folder, because then you'll be able to access the Data folder in the same way.
+
+Now we're ready for the class!
+
+\end{document}

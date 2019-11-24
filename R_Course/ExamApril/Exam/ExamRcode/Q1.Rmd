@@ -1,0 +1,141 @@
+---
+title: "Q1"
+author: "Brian Williams"
+date: "19 March 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+(1)Put your exam code in the author space above
+
+The data analysed in this folder is a new backpain dataset.  Descriptions of the variables are listed in the file Variables_BackPain2.xlsx in the ExamResources folder. There is another file, called BACKPAIN_EXTRACT_GenericIndividualQ.pdf, which you may also find useful.
+The data is in a Stata data file called BackPainData_1.dta, which is located in the ExamData folder.
+
+
+Here are the variables summarised.
+
+```{r readData, echo = FALSE, message = FALSE}
+library(tidyverse)
+library(haven)
+df <- read_dta("../ExamData/BackPainData_1.dta")
+#summary(df)
+```
+
+Take a look at the summary. There are a few un-helpful variable names, so make the following changes.
+
+(2)Rename the variables:
+
+1. quintile_c to wealthq
+2. heightvalid to height
+3. screen12
+4. q4008
+5. q4009 (See questionaire BACKPAIN_EXTRACT....pdf in ExamResources)
+
+We will focus on the following 11 categorical variables. .:
+
+1. residence
+2. sex
+3. country
+4. wealthq (changed from quintile_c) 
+5. agegr
+6. educ4gp
+7. bmi_4gp
+8. drinkYN
+9. arthritis
+10. depression
+11. eworked
+
+When the df is loaded these 11 variables are listed as numeric.  
+
+(3)Change the 11 listed variables to factors.
+
+```{r rename}
+
+```
+
+
+(4)The coding of the level names in these factors is not self-explanatory, so referring to the Variables_BackPain2.xlsx file, give concise, useful names to the levels of the 11 factor variables in the list.
+
+```{r recode}
+
+```
+
+
+(5)Add a summary with the new names and levels to this document.
+```{r summary}
+
+```
+
+
+(6)Prepare a boxplot of bmi for men and women on the same plot and histograms of bmi for men and women on another plot. Put the two plots alongside one another.
+
+```{r boxhist}
+
+```
+
+
+(7)Prepare some tables highlighting associations between any groupings of the categorical variables above that you think will be of interest. You should prepare at least 6 groups and no more than 8. A three-way table is a single group and a two-way table is a single group. Do not use four-way grouping, please! Comment **briefly - one sentence** on each table.
+
+```{r tables1}
+
+```
+
+```{r tables2}
+
+```
+
+```{r tables3}
+
+```
+
+
+```{r tables4}
+
+```
+
+
+```{r tables5}
+
+```
+
+
+```{r tables6}
+
+```
+
+
+(8)Prepare a scatter-plot of WHOQoL vs BPburden, with a linear smoother. Use the alpha transparency parameter in the plot. Repeat with WHOQoL vs your re-named screen12.
+Comment on the comparison.
+
+```{r plotSmooth}
+
+```
+
+
+(9)Use the lm() function to do the regression of WHOQoL vs BPburden and then plot the diagnostics.
+
+
+```{r selectVariables}
+library(dplyr)
+
+
+```
+
+
+(10)Show boxplots of the bmi of Urban, Chinese women for all wealth categories and use colour to show smokers and non-smokers.
+
+```{r  boxBMICWWS}
+
+```
+(11)Save the cleaned up df in the ExamData folder so that it can be loaded in Q2.
+
+```{r save}
+
+```
+
+
+(12) Test that the file knits properly, then save it in the examRcode folder.
+
