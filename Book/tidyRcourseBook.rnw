@@ -12,9 +12,7 @@
 \date{\today}
 
 \begin{document}
-\SweaveOpts{concordance=TRUE}
 
-% Ny kommentar Håkan
 
 
 <<setup,include=FALSE,cache=FALSE,echo=FALSE, warning = TRUE, message = FALSE >>=

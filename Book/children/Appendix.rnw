@@ -21,7 +21,7 @@ EVAL <- FALSE
 \chapter{Appendix - miscellaneous extra information}\label{Appendix}
 
 
-\author{Brian Williams $<$\href{mailto:bjw649@gmail.com}%
+\author{Brian Williams $<$\href{mailto:bjw649@gmail.com}
 {bjw649@gmail.com}$>$}
 
 
@@ -46,7 +46,7 @@ If the data file is shared from the web - then a single URL works, but we don't 
 \graphicspath{{./Images/}}
 \includegraphics[width=6cm, height = 8cm]{dataFolder2.png}
 \caption{Using a common data folder.}
-\label{fig:pch}
+\label{fig:folder_struct}
 \end{figure}
 
 
@@ -230,7 +230,7 @@ Adler's Nutshell book\cite{Adler2010} contains a wealth of information including
 
 Dalgaard \cite{Dalgaard2008} contains more basic statistical material, but has a concise well-written introduction to R and a nice compendium of functions.
 
-The books by Kabacoff \cite{Kabacoff2014} (I like this one) and Lander \cite{Lander2014} are more advanced and more recent and cover topics like ggplot2 and creating reports in Word directly from R.
+The books by Kabacoff \cite{Kabacoff2015} (I like this one) and Lander \cite{Lander2014} are more advanced and more recent and cover topics like ggplot2 and creating reports in Word directly from R.
 
 Wickham's book \cite{Wickham2009} on ggplot2 is the standard reference for that material and now there is a second edition. The book by Chang \cite{Chang2012}, provides many more examples and may be an easier starting point.
 

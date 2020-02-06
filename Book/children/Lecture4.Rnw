@@ -33,11 +33,9 @@ As we've mentioned before, a blanket \texttt{drop\_na()} or \texttt{na.omit()} d
 
 \section{Introduction}
 
-The package \texttt{ggplot2} is a major revision of the original ggplot package(no longer available).It is described in the second edition of Hadley Wickham's book. An early draft is included in the Resources folder (ggplot2\_2016-book.pdf).
+The package \texttt{ggplot2} is a major revision of the original ggplot package(no longer available).It is described in the second edition of Hadley Wickham's book. An early draft is included in the Resources folder (ggplot2\_2016-book.pdf).There is extensive documentation and examples \href{https://ggplot2.tidyverse.org/}{here}.
 
-There is extensive documentation and examples \href{https://ggplot2.tidyverse.org/}{here}.
-
-Winston Chang has a \href{http://www.cookbook-r.com/}{web-site} too, with many examples. If you get stuck, the forum at ggplot2@googlegroups.com, is very active and provides rapid help.  Please do pay attention to their posting protocols.  You must provide minimal example codes which reproduce your problem. If you Google your problem, you'll also find a lot of answers on Stack Overflow.
+Winston Chang has a \href{http://www.cookbook-r.com/}{web-site} too, with many examples. The forum at ggplot2@googlegroups.com is very active and provides rapid help.  Please do pay attention to their posting protocols.  You must provide minimal example codes which reproduce your problem. If you Google your problem, you'll also find a lot of answers on Stack Overflow.
 
 \section{ggplot2 concepts}
 

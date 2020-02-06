@@ -9,7 +9,8 @@ EVAL = FALSE
 
 
 \chapter{Lecture 5 - More dplyr}
-\section*{Tabulation, joining and merging, tidyr and wide form}\label{Lecture5}
+\label{Lecture5}
+\section*{Tabulation, joining and merging, tidyr and wide form}
 
 \author{Brian Williams $<$\href{mailto:bjw649@gmail.com}%
 {bjw649@gmail.com}$>$}
@@ -61,7 +62,7 @@ There is an equivalent function, \texttt{bind\_cols()}\index{dplyr::bindcols()@b
 
 This function will also bind a dataframe, provided each has the same number of rows.
 <<L5BindDupRow,  warning = warn , eval =  EVAL >>=
-hhDf <- bind_rows(hhDf,hhDf[2,])    # bind_rows adds rows of equal length below the data frame
+hhDf <- bind_rows(hhDf,hhDf[2,])  # bind_rows adds rows of equal length to the data frame
 hhDf
 @
 
@@ -297,8 +298,8 @@ There is one other limitation in the selection process and that is that the meas
 
 <<L5Chaining_tidyr_commands , eval =  EVAL >>=
 bPgather <- bP %>%              
-             mutate( wHR=100*wHR) %>%                           # Multiply wHR by 100
-             gather(key = variable, value = value, disability, bmi, wHR)      # Convert to long form
+             mutate( wHR=100*wHR) %>%                                    # Multiply wHR by 100
+             gather(key = variable, value = value, disability, bmi, wHR) # Convert to long
   
 @
 

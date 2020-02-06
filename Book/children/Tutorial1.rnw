@@ -8,6 +8,7 @@ EVAL = FALSE
 
 
 \chapter{Tutorial 1 - Rstudio, dataframes, packages and file handing}
+\label{Tutorial1}
 
 \author{Brian Williams $<$\href{mailto:bjw649@gmail.com}%
 {bjw649@gmail.com}$>$}
@@ -38,8 +39,8 @@ Note that even though it has no arguments you must include the parentheses when 
 
 <<T1read.table, eval = EVAL >>=
 library(tidyverse)
-bP        <- read_csv(file="../Data/BackPain.csv", na = "", comment = '#', skip = 0)
-            # bP is a tibble so only 10 lines are printed (and a limited number of variables, too)
+bP <- read_csv(file="../Data/BackPain.csv", na = "", comment = '#', skip = 0)
+# bP is a tibble so only 10 lines are printed (and a limited number of variables, too)
 select(bP,alcohol)
 bP <- bP %>% mutate_if(is.character, as.factor)
 select(bP,alcohol)
@@ -63,13 +64,13 @@ Now we will do a very rough cleanup of the data, by simply removing all records 
 
 <<T1Dataframe3, eval = EVAL >>=
 sum(is.na(bP))   # compute number of NA's
-bP <- bP %>% drop_na()  # Use this to remove all cases (rows) containing at least one NA from
+bP <- bP %>% drop_na()  # Use this to remove all cases (rows) with at least one NA from
 #  The non-tidyverse way  bP <- na.omit(bP)
 sum(is.na(bP))     #check whether all NA's are removed
 #----------------------------------------------------------------------------------
 @
 
-  \subsubsection{Notes:}
+\subsubsection{Notes:}
 
 \begin{itemize} 
 
@@ -77,7 +78,7 @@ sum(is.na(bP))     #check whether all NA's are removed
 
 \item{\texttt{omit.na()}\index{Core functions!omit.na()} and \texttt{tidyR::drop\_na()} are very powerful and produces a 'complete cases' data frame - but be careful, you may lose a lot of data!  Look at the new size of bP!}
 
-\item{Where logicals are included in a numerical computation, R assumes \texttt{TRUE} = 1, \texttt{FALSE} = 0, so \texttt{sum(is.na(bP))} computes the total number of NA's in the data frame.}
+\item{For logicals in numerical computations, R assumes \texttt{TRUE} = 1, \texttt{FALSE} = 0, so \texttt{sum(is.na(bP))} computes the total number of NA's in the data frame.}
 \end{itemize}
 
 

@@ -16,6 +16,7 @@ EVAL <- FALSE
 
 
 \chapter{Lecture 12- Times and dates, Debugging}
+\label{Lecture12}
 
 
 \author{Brian Williams $<$\href{mailto:bjw649@gmail.com}%
@@ -115,8 +116,8 @@ Note the last one.  You can enter an entirely numeric character string without q
 Adding time is straightforward - simply add an underscore and then one or more of the letters "h", "m", "s" as appropriate.
 
 <<L12lubridateEx2, eval = EVAL>>=
-dmy_hm("16/02/2017 11:00")                                #(straight from one of my Excel spreadsheets)
-dmy_hm("14/July/1977 21:45")                              # Does anyone know who was born at that time?
+dmy_hm("16/02/2017 11:00")                    #(straight from one of my Excel spreadsheets)
+dmy_hm("14/July/1977 21:45")                  # Does anyone know who was born at that time?
 datetime <- dmy_hm("14/July/1977 21:45")
 str(datetime)
 @
@@ -127,7 +128,7 @@ From these POSIXct objects, you can also extract the year, month or day (\texttt
 <<L12lubridateEx4, eval = EVAL>>=
 wday(today())
 mday(today())
-wday(datetime)                                            # What day of the week was she born?
+wday(datetime)                               # What day of the week was she born?
 month(VE_day)
 @
 
@@ -137,14 +138,14 @@ Unfortunately, we don't have time to explore \texttt{lubridate} further, but the
 <<L12lubridateEx3, eval = EVAL>>=
 vignette("lubridate")
 @
-...and there is a chapter on \texttt{lubridate} in "R for Data Science" \cite{Wickham2016}.
+...and there is a chapter on \texttt{lubridate} in "R for Data Science" \cite{Wickham2017}.
 
 
 
 
 \section{Debugging}
 
-Wickham in "Advanced R" \cite{Wickham2015} writes: 
+Wickham in "Advanced R" \cite{Wickham2015a} writes: 
 
 \begin{quote}
 Debugging is the art and science of fixing unexpected problems in your code. 

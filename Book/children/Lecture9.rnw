@@ -87,10 +87,6 @@ The GADM files are of administrative regions at various scales, coarsest being 0
 Winston Chang's book has a little bit of information on using maps in ggplot. Here's his code to access a shapefile using the maptools package. (Remember that this package does not automatically sort out an appropriate projection, though at country scale its default is probably OK.) 
 
 
-
-
-
-
 I've got the shapefile folder for Australia in the Data folder. Notice that a shapefile is actually a folder with a number of files, including one with extension .shp, which is the layer argument in the function \texttt{readOGR()}. If you've put a shapefile folder from a country of your own choice in the Data folder, edit the code to agree with the three letter ISO Code name for your chosen country in the argument of \texttt{readOGR()} and then run the block of code below.
 
 <<L9ShapefileChang1,warning = warn, eval = EVAL>>=
@@ -98,16 +94,19 @@ library(ggplot2)
 library(rgdal)
 library(sp)
 SF <- readOGR(dsn = "../Data/gadm36_SWE_shp/gadm36_SWE_2.shp", layer ="gadm36_SWE_2")  #1
-#SF <- readRDS("../Data/gadm36_SWE_2_sp.rds")                  # 1.
 class(SF)                                                     # 1.
 head(SF@data)                                                 # 2.
-#plot(SF)                                                      # 3.
+plot(SF)                                                      # 3.
 cMap2 <- fortify(SF)                                          # 4.
 head(cMap2)                                                   # 5.
-myMap <- ggplot(cMap2, aes(x=long, y= lat, group = group))+ geom_path() 
-#myMap <- myMap + coord_equal()  +ylim(-45,-8) +xlim(110,155)
+
+myMap <- ggplot(cMap2, aes(x=long, y= lat, group = group)) 
+  + geom_path() 
+
 myMap <- myMap + coord_map("mercator")
-#myMap = myMap + coord_map("ortho", orientation = c(-34, 151, 0))
+
+myMap = myMap + coord_map("ortho", orientation = c(-34, 151, 0))
+
 myMap 
 @
 
@@ -119,10 +118,8 @@ myMap
 
 
 
-
-\item{The function \texttt{readOGR} (from the \texttt{rgdal} package) reads a shape file and converts it to a \texttt{SpatialPolygonsDataFrame} object. This is not a 'simple' data frame but contains many layers of data in 'slots'. It is a class of object that is fundamental to mapping in R - but is too complex for us to deal with here. If you enter \texttt{str(SF)} you will get an overwhelming  screen full of information!}
+\item{ \texttt{readOGR} (from the \texttt{rgdal} package) reads a shape file and converts it to a \texttt{SpatialPolygonsDataFrame} object. This is not a 'simple' data frame but contains many layers of data in 'slots'. It is a class of object that is fundamental to mapping in R - but is too complex for us to deal with here. If you enter \texttt{str(SF)} you will get an overwhelming  screen full of information!}
 \item {Here you see some of the upper layer items stored in the \texttt{SpatialPolygonsDataFrame} object.}
-
 
 
 
@@ -269,7 +266,7 @@ This time we'll not use maptools and \texttt{readShapePoly}. Instead we'll use t
 
 
 <<L9readOGR,  warning = warn, eval = EVAL>>=
-Nlibrary(maps)
+library(maps)
 library(ggplot2)
 library(rgdal)
 
@@ -277,9 +274,9 @@ library(rgdal)
 wmap <- readOGR(dsn = "../Data/ne_110m_admin_0_countries", 
                 layer="ne_110m_admin_0_countries")
 class(wmap)    # SpatialPolygonsDataFrame
-Amap <- wmap[wmap$name == "Australia",]      # Subsetting to grab Australian data
+Amap <- wmap[wmap$name == "Australia",]    # Subsetting to grab Australian data
 plot(Amap)          
-wmap_df <- fortify(wmap, regions = ISO_A2)  # convert SpatialPolygonsDataFrame to a dataframe
+wmap_df <- fortify(wmap, regions = ISO_A2) # convert SpatialPolygonsDataFrame to dataframe
 head(wmap_df)
 
 base_world <- ggplot(data = wmap_df, aes(x = long, y = lat)) + coord_fixed()+

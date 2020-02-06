@@ -333,7 +333,8 @@ kable(head(iris), row.names=TRUE)
 
 <<T2Kable3, eval =FALSE>>=
 #create a 5 row datframe with variables with different distributions. 
-kable(data.frame(Rnorm = rnorm(5), Runif = runif(5), Rbeta = rbeta(5, .5, .5), RPoisson = rpois(5, 0.5))) 
+kable(data.frame(Rnorm = rnorm(5), Runif = runif(5), Rbeta = rbeta(5, .5, .5), 
+                 RPoisson = rpois(5, 0.5))) 
             
 @
 The function \texttt{rnorm()}\index{Core functions!rnorm()} generates random deviates. The others are what you might have guessed!

@@ -1,10 +1,94 @@
-<<Lecture1, include=TRUE , results='hide',echo=FALSE>>=
-library(knitr)
-set_parent("../tidyRcourseBook.rnw")
-library(tidyverse)
-warn <- FALSE
-EVAL <- TRUE
-@
+\documentclass[titlepage]{book}
+\usepackage[]{graphicx}\usepackage[]{color}
+% maxwidth is the original width if it is less than linewidth
+% otherwise use linewidth (to make sure the graphics do not exceed the margin)
+\makeatletter
+\def\maxwidth{ %
+  \ifdim\Gin@nat@width>\linewidth
+    \linewidth
+  \else
+    \Gin@nat@width
+  \fi
+}
+\makeatother
+
+\definecolor{fgcolor}{rgb}{0.345, 0.345, 0.345}
+\newcommand{\hlnum}[1]{\textcolor[rgb]{0.686,0.059,0.569}{#1}}%
+\newcommand{\hlstr}[1]{\textcolor[rgb]{0.192,0.494,0.8}{#1}}%
+\newcommand{\hlcom}[1]{\textcolor[rgb]{0.678,0.584,0.686}{\textit{#1}}}%
+\newcommand{\hlopt}[1]{\textcolor[rgb]{0,0,0}{#1}}%
+\newcommand{\hlstd}[1]{\textcolor[rgb]{0.345,0.345,0.345}{#1}}%
+\newcommand{\hlkwa}[1]{\textcolor[rgb]{0.161,0.373,0.58}{\textbf{#1}}}%
+\newcommand{\hlkwb}[1]{\textcolor[rgb]{0.69,0.353,0.396}{#1}}%
+\newcommand{\hlkwc}[1]{\textcolor[rgb]{0.333,0.667,0.333}{#1}}%
+\newcommand{\hlkwd}[1]{\textcolor[rgb]{0.737,0.353,0.396}{\textbf{#1}}}%
+\let\hlipl\hlkwb
+
+\usepackage{framed}
+\makeatletter
+\newenvironment{kframe}{%
+ \def\at@end@of@kframe{}%
+ \ifinner\ifhmode%
+  \def\at@end@of@kframe{\end{minipage}}%
+  \begin{minipage}{\columnwidth}%
+ \fi\fi%
+ \def\FrameCommand##1{\hskip\@totalleftmargin \hskip-\fboxsep
+ \colorbox{shadecolor}{##1}\hskip-\fboxsep
+     % There is no \\@totalrightmargin, so:
+     \hskip-\linewidth \hskip-\@totalleftmargin \hskip\columnwidth}%
+ \MakeFramed {\advance\hsize-\width
+   \@totalleftmargin\z@ \linewidth\hsize
+   \@setminipage}}%
+ {\par\unskip\endMakeFramed%
+ \at@end@of@kframe}
+\makeatother
+
+\definecolor{shadecolor}{rgb}{.97, .97, .97}
+\definecolor{messagecolor}{rgb}{0, 0, 0}
+\definecolor{warningcolor}{rgb}{1, 0, 1}
+\definecolor{errorcolor}{rgb}{1, 0, 0}
+\newenvironment{knitrout}{}{} % an empty environment to be redefined in TeX
+
+\usepackage{alltt}
+\newcommand{\SweaveOpts}[1]{}  % do not interfere with LaTeX
+\newcommand{\SweaveInput}[1]{} % because they are not real TeX commands
+\newcommand{\Sexpr}[1]{}       % will only be parsed by R
+
+
+\usepackage{bwstyle}
+
+\title{\huge \textbf{ R- a tool for statistical analysis }\vspace{+1cm}  }
+\subtitle{A modern introduction using tidyverse}
+\author{{\LARGE \emph{Brian Williams}}\vspace{+1cm} \\
+ Epidemiology and Global Health Unit,\\
+ Department of Public Health and Medicine,\\
+ Umeå University \vspace{+8cm}}
+ 
+
+\date{\today}
+
+
+
+\begin{document}
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{library}\hlstd{(knitr)}
+\hlkwd{set_parent}\hlstd{(}\hlstr{"../tidyRcourseBook.rnw"}\hlstd{)}
+\hlkwd{library}\hlstd{(tidyverse)}
+\end{alltt}
+
+
+{\ttfamily\noindent\itshape\color{messagecolor}{\#\# -- Attaching packages ------------------------------------------------------------------------------------------------------------- tidyverse 1.3.0 --}}
+
+{\ttfamily\noindent\itshape\color{messagecolor}{\#\# v ggplot2 3.2.1\ \ \ \  v purrr\ \  0.3.3\\\#\# v tibble\ \ 2.1.3\ \ \ \  v dplyr\ \  0.8.3\\\#\# v tidyr\ \  1.0.2\ \ \ \  v stringr 1.4.0\\\#\# v readr\ \  1.3.1\ \ \ \  v forcats 0.4.0}}
+
+{\ttfamily\noindent\itshape\color{messagecolor}{\#\# -- Conflicts ---------------------------------------------------------------------------------------------------------------- tidyverse\_conflicts() --\\\#\# x dplyr::filter() masks stats::filter()\\\#\# x dplyr::lag()\ \ \ \ masks stats::lag()}}\begin{alltt}
+\hlstd{warn} \hlkwb{<-} \hlnum{FALSE}
+\hlstd{EVAL} \hlkwb{<-} \hlnum{TRUE}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 
 
 
@@ -28,7 +112,7 @@ Not all the software in tidyverse is limited to dataframes, but that is its broa
 
 There are still many procedures of interest to us in 'Core' R, which currently lie outside tidyverse and we will use these as the need arises. 
 
-Check out the freely available \href{https://r4ds.had.co.nz/index.html}{web version of the book} "R for data science" by Hadley and Garret Grolemund \cite{Wickham2017}. This course is inspired by the approach in that book.  Much of the material in this course is extracted and simplified from an earlier course aimed at research students in the Medical Faculty. The earlier course notes are available in the resources folder (R4researchFeb2016.pdf) and may provide expanded background on many topics. The R4researchFeb2016.pdf notes are also live-indexed and have a live table of contents, so you should be able to find things in those notes reasonably easily.
+Check out the freely available \href{https://r4ds.had.co.nz/index.html}{web version of the book} "R for data science" by Hadley and Garret Grolemund \cite{Wickham2016}. This course is inspired by the approach in that book.  Much of the material in this course is extracted and simplified from an earlier course aimed at research students in the Medical Faculty. The earlier course notes are available in the resources folder (R4researchFeb2016.pdf) and may provide expanded background on many topics. The R4researchFeb2016.pdf notes are also live-indexed and have a live table of contents, so you should be able to find things in those notes reasonably easily.
 
 \section{Preliminaries}
 
@@ -114,15 +198,37 @@ If nothing happens, in the console, press the return/enter key.
 
 Try these three methods with the following 4 lines of script:
 
-<<Lecture1basic-random,  warning=warn, eval=EVAL  >>=
-  ##Normally distributed N(0,1) variates, mean, var
-  #-----------------------------------------------------------------------------------
-set.seed(1121)  # set a seed for pseudo-random number generation
-(x <- rnorm(20))   # creates a vector, x, containing 20 N(0,1) variates
-mean(x)         # computes the mean of the sample
-var(x)          # computes the variance of the sample
-#----------------------------------------------------------------------------------
-@
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+  \hlcom{##Normally distributed N(0,1) variates, mean, var}
+  \hlcom{#-----------------------------------------------------------------------------------}
+\hlkwd{set.seed}\hlstd{(}\hlnum{1121}\hlstd{)}  \hlcom{# set a seed for pseudo-random number generation}
+\hlstd{(x} \hlkwb{<-} \hlkwd{rnorm}\hlstd{(}\hlnum{20}\hlstd{))}   \hlcom{# creates a vector, x, containing 20 N(0,1) variates}
+\end{alltt}
+\begin{verbatim}
+##  [1]  0.1449583  0.4383221  0.1531912  1.0849426  1.9995449 -0.8118832
+##  [7]  0.1602680  0.5858923  0.3600880 -0.0253084  0.1508809  0.1100824
+## [13]  1.3596812 -0.3269946 -0.7163819  1.8097690  0.5084011 -0.5274603
+## [19]  0.1327188 -0.1559430
+\end{verbatim}
+\begin{alltt}
+\hlkwd{mean}\hlstd{(x)}         \hlcom{# computes the mean of the sample}
+\end{alltt}
+\begin{verbatim}
+## [1] 0.3217385
+\end{verbatim}
+\begin{alltt}
+\hlkwd{var}\hlstd{(x)}          \hlcom{# computes the variance of the sample}
+\end{alltt}
+\begin{verbatim}
+## [1] 0.5714534
+\end{verbatim}
+\begin{alltt}
+\hlcom{#----------------------------------------------------------------------------------}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 
   Now \textbf{CLICK in the edit window} away from the selection to deselect (remove the highlight)!!!!
 
@@ -183,14 +289,73 @@ When that's all done, go to the packages pane and click on the 'Packages' tab at
 
 In \texttt{tidyverse}, the standard function for reading a .csv file is \texttt(read\_csv).
 
-<<L1Dataframe1, warning=warn, eval=EVAL  >>=
-  ##Reading and summarising data frames
-  #----------------------------------------------------------------------------------
-library(tidyverse)
-bP <- read_csv(file="../Data/BackPain.csv", na = c(""," ","NA"))  # (1), (2), (3), (4)
-glimpse(bP)
-bP  # bP is a tibble so only 10 lines are printed (a limited number of variables, too)
-@
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+  \hlcom{##Reading and summarising data frames}
+  \hlcom{#----------------------------------------------------------------------------------}
+\hlkwd{library}\hlstd{(tidyverse)}
+\hlstd{bP}        \hlkwb{<-} \hlkwd{read_csv}\hlstd{(}\hlkwc{file}\hlstd{=}\hlstr{"../Data/BackPain.csv"}\hlstd{,} \hlkwc{na} \hlstd{=} \hlkwd{c}\hlstd{(}\hlstr{""}\hlstd{,}\hlstr{" "}\hlstd{,}\hlstr{"NA"}\hlstd{))}      \hlcom{# (1), (2), (3), (4)}
+\end{alltt}
+
+
+{\ttfamily\noindent\itshape\color{messagecolor}{\#\# Parsed with column specification:\\\#\# cols(\\\#\#\ \  .default = col\_character(),\\\#\#\ \  age = col\_double(),\\\#\#\ \  bmi = col\_double(),\\\#\#\ \  waistc = col\_double(),\\\#\#\ \  comorb = col\_double(),\\\#\#\ \  disability = col\_double(),\\\#\#\ \  height = col\_double()\\\#\# )}}
+
+{\ttfamily\noindent\itshape\color{messagecolor}{\#\# See spec(...) for full column specifications.}}\begin{alltt}
+\hlkwd{glimpse}\hlstd{(bP)}
+\end{alltt}
+\begin{verbatim}
+## Observations: 34,122
+## Variables: 24
+## $ residence  <chr> "Urban", "Urban", "Urban", "Rural", "Rural", "Urban", "R...
+## $ sex        <chr> "Female", "Female", "Female", "Male", "Female", "Female"...
+## $ age        <dbl> 66, 63, 76, 64, 67, 74, 51, 80, 67, 75, 70, 68, 78, 55, ...
+## $ wealthQ    <chr> "Q3", "Q4", "Q5 richest", "Q4", "Q1 poorest", "Q4", "Q3"...
+## $ physical   <chr> "high phys act", "mod phys act", "high phys act", "high ...
+## $ country    <chr> "China", "China", "China", "Mexico", "China", "China", "...
+## $ backPain30 <chr> "No", "No", "No", "No", "No", "No", "No", "No", "No", "N...
+## $ agegr      <chr> "60-69", "60-69", "70-79", "60-69", "60-69", "70-79", "5...
+## $ maritalS   <chr> "Div/Wid/Sep", "Div/Wid/Sep", "Div/Wid/Sep", "Married/Co...
+## $ eduS       <chr> "Compl Sec/HS", "Compl Sec/HS", "No primary", "Compl Pri...
+## $ workS      <chr> "currently not working", "currently not working", "curre...
+## $ bmi        <dbl> 23.87512, 19.43697, 28.56648, 26.06168, 26.97505, 21.504...
+## $ bmi4       <chr> "Normal", "Normal", "Pre-Obese", "Pre-Obese", "Pre-Obese...
+## $ waistc     <dbl> 92.0, 66.0, 85.0, 99.5, 90.2, 75.0, 96.0, 100.0, 94.3, N...
+## $ smoke      <chr> "Never/Not Daily/Current", "Never/Not Daily/Current", "N...
+## $ alcohol    <chr> "Abstainers", "Abstainers", "Abstainers", "Abstainers", ...
+## $ arthritis  <chr> "no", "no", "no", "no", "no", "yes", "yes", "no", "yes",...
+## $ angina     <chr> NA, "no", NA, "no", NA, "no", "no", "no", "no", NA, "no"...
+## $ depression <chr> "no", "no", "no", "no", "no", "no", "no", "no", "no", "n...
+## $ asthma     <chr> "no", "no", "no", "no", "no", "no", "no", "no", "no", "n...
+## $ diabetes   <chr> "no", "no", "no", "no", "no", "no", "no", "no", "no", "y...
+## $ comorb     <dbl> 0, 0, 0, 0, 0, 1, 1, 0, 1, 2, 1, 2, 0, 1, 2, 1, 0, 0, 2,...
+## $ disability <dbl> 13.888890, 0.000000, 2.777778, 8.333333, 38.888890, 2.77...
+## $ height     <dbl> 165, 154, 154, NA, 155, 155, NA, NA, 156, 168, NA, NA, 1...
+\end{verbatim}
+\begin{alltt}
+\hlstd{bP}             \hlcom{# bP is a tibble so only 10 lines are printed (and a limited number of variables, too)}
+\end{alltt}
+\begin{verbatim}
+## # A tibble: 34,122 x 24
+##    residence sex     age wealthQ physical country backPain30 agegr maritalS
+##    <chr>     <chr> <dbl> <chr>   <chr>    <chr>   <chr>      <chr> <chr>   
+##  1 Urban     Fema~    66 Q3      high ph~ China   No         60-69 Div/Wid~
+##  2 Urban     Fema~    63 Q4      mod phy~ China   No         60-69 Div/Wid~
+##  3 Urban     Fema~    76 Q5 ric~ high ph~ China   No         70-79 Div/Wid~
+##  4 Rural     Male     64 Q4      high ph~ Mexico  No         60-69 Married~
+##  5 Rural     Fema~    67 Q1 poo~ low phy~ China   No         60-69 Married~
+##  6 Urban     Fema~    74 Q4      mod phy~ China   No         70-79 Div/Wid~
+##  7 Rural     Fema~    51 Q3      low phy~ South ~ No         50-59 Married~
+##  8 Urban     Fema~    80 Q5 ric~ low phy~ South ~ No         80+   Div/Wid~
+##  9 Urban     Male     67 Q4      high ph~ China   No         60-69 Married~
+## 10 Urban     Male     75 Q5 ric~ mod phy~ China   No         70-79 Married~
+## # ... with 34,112 more rows, and 15 more variables: eduS <chr>, workS <chr>,
+## #   bmi <dbl>, bmi4 <chr>, waistc <dbl>, smoke <chr>, alcohol <chr>,
+## #   arthritis <chr>, angina <chr>, depression <chr>, asthma <chr>,
+## #   diabetes <chr>, comorb <dbl>, disability <dbl>, height <dbl>
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
   \subsubsection{Notes:}
 \begin{enumerate}
 \item{The <- symbol assigns the output from the function on the right to the variable named on the left.}
@@ -211,12 +376,16 @@ The first thing we notice from our \texttt{glimpse()} in the Console below, is t
 We'll also demonstrate the power of dplyr when using \textsl{pipes} in the next code chunk - in a single assignment we convert all the character variables to factors, remove all the NA's in the dataframe, and create a new variable for the waist/height ratio of the subjects. It looks very complex - but really its just like learning another language (Yes, I know - Swedish is very difficult!)
 \label{filter}\label{mutate}\index{tidyverse filter}\index{tidyverse mutate}
 
-<<L1Dataframe2, warning=warn, eval=EVAL  >>=
-bP <- bP %>%                                # (1)
-  mutate_if(is.character, as.factor) %>%    # (2) 
-  filter(complete.cases(.)) %>%             # (3)
-  mutate(waistHtRatio = waistc/height)      # adds a new variable called waistHtRatio  (4)
-@
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{bP} \hlkwb{<-} \hlstd{bP} \hlopt{%>%}                                      \hlcom{# (1)}
+  \hlkwd{mutate_if}\hlstd{(is.character, as.factor)} \hlopt{%>%}          \hlcom{# (2) }
+  \hlkwd{filter}\hlstd{(}\hlkwd{complete.cases}\hlstd{(.))} \hlopt{%>%}                   \hlcom{# (3)}
+  \hlkwd{mutate}\hlstd{(}\hlkwc{waistHtRatio} \hlstd{= waistc}\hlopt{/}\hlstd{height)}            \hlcom{# adds a new variable called waistHtRatio  (4)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 
 \subsubsection{Notes:}
 \begin{enumerate}
@@ -234,56 +403,120 @@ Here we introduce a new package based on \texttt{tidyverse} called \texttt{janit
 
 \subsubsection{One-way table}
 
-<<L1Tabyls1way, warning=warn, eval=EVAL  >>=
-library(janitor)
-c1 <- bP %>% 
-      tabyl(country)
-c1
-@
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{library}\hlstd{(janitor)}
+\end{alltt}
+
+
+{\ttfamily\noindent\itshape\color{messagecolor}{\#\# \\\#\# Attaching package: 'janitor'}}
+
+{\ttfamily\noindent\itshape\color{messagecolor}{\#\# The following objects are masked from 'package:stats':\\\#\# \\\#\#\ \ \ \  chisq.test, fisher.test}}\begin{alltt}
+\hlstd{c1} \hlkwb{<-} \hlstd{bP} \hlopt{%>%}
+      \hlkwd{tabyl}\hlstd{(country)}
+\hlstd{c1}
+\end{alltt}
+\begin{verbatim}
+##             country    n     percent
+##               China 7989 0.655050836
+##               Ghana   38 0.003115776
+##               India 1781 0.146031486
+##              Mexico  378 0.030993768
+##  Russian Federation 1405 0.115201705
+##        South Africa  605 0.049606428
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
 
 \subsection{Two-way table}
-<<L1Tabyls2way, warning=warn, eval=EVAL  >>=
-c2 <- bP %>% 
-      tabyl(country, eduS)
-c2
-@
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{c2} \hlkwb{<-} \hlstd{bP} \hlopt{%>%}
+      \hlkwd{tabyl}\hlstd{(country, eduS)}
+\hlstd{c2}
+\end{alltt}
+\begin{verbatim}
+##             country Compl Primary Compl Sec/HS Compl Uni/Coll No primary
+##               China          1612         2672            328       3377
+##               Ghana             7           14              5         12
+##               India           249          441            163        928
+##              Mexico           108           43             57        170
+##  Russian Federation            91          996            272         46
+##        South Africa           139          169             58        239
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
 
 ...and some people are more familiar with percentages:
 
-<<L1Tabyls2wayPct, warning=warn, eval=EVAL  >>=
-
-c3 <- bP %>% 
-    tabyl(country, agegr) %>% 
-    adorn_percentages("row") %>% 
-    adorn_pct_formatting(digits = 2)
-c3
-
-@
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{c3} \hlkwb{<-} \hlstd{bP} \hlopt{%>%}
+    \hlkwd{tabyl}\hlstd{(country, agegr)} \hlopt{%>%}
+    \hlkwd{adorn_percentages}\hlstd{(}\hlstr{"row"}\hlstd{)} \hlopt{%>%}
+    \hlkwd{adorn_pct_formatting}\hlstd{(}\hlkwc{digits} \hlstd{=} \hlnum{2}\hlstd{)}
+\hlstd{c3}
+\end{alltt}
+\begin{verbatim}
+##             country  50-59  60-69  70-79   80+
+##               China 47.42% 29.67% 18.48% 4.44%
+##               Ghana 44.74% 28.95% 23.68% 2.63%
+##               India 48.46% 33.97% 14.26% 3.31%
+##              Mexico 27.78% 42.59% 20.37% 9.26%
+##  Russian Federation 42.21% 27.19% 22.63% 7.97%
+##        South Africa 42.31% 35.21% 17.52% 4.96%
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
 The levels of factors by default are listed alphabetically, sometimes there is a sensible order so we change it:
 
-<<L1Re-orderLevels, warning=warn , eval=EVAL  >>=
- bP <- bP %>% 
-       mutate(eduS = fct_relevel(eduS,"No primary","Compl Primary", 
-                                 "Compl Sec/HS", "Compl Uni/Coll"),
-                     fct_relevel(bmi4, "Underweight","Normal", 
-                                 "Pre-Obese", "Obese"))
-#-------------------------------------------------------------------------------
-@
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+ \hlstd{bP} \hlkwb{<-} \hlstd{bP} \hlopt{%>%}
+       \hlkwd{mutate}\hlstd{(}\hlkwc{eduS} \hlstd{=} \hlkwd{fct_relevel}\hlstd{(eduS,}\hlstr{"No primary"}\hlstd{,}\hlstr{"Compl Primary"}\hlstd{,}
+                                 \hlstr{"Compl Sec/HS"}\hlstd{,} \hlstr{"Compl Uni/Coll"}\hlstd{),}
+                     \hlkwd{fct_relevel}\hlstd{(bmi4,} \hlstr{"Underweight"}\hlstd{,}\hlstr{"Normal"}\hlstd{,}
+                                 \hlstr{"Pre-Obese"}\hlstd{,} \hlstr{"Obese"}\hlstd{))}
+\hlcom{#-------------------------------------------------------------------------------}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 
 We'll visualize the bmi4 below.
-<<L1TableReOrder, warning=warn , eval=EVAL  >>=
-c3 <- bP %>% 
-    tabyl(country, eduS) %>% 
-    adorn_percentages("row") %>% 
-    adorn_pct_formatting(digits = 2)
-c3
-@
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{c3} \hlkwb{<-} \hlstd{bP} \hlopt{%>%}
+    \hlkwd{tabyl}\hlstd{(country, eduS)} \hlopt{%>%}
+    \hlkwd{adorn_percentages}\hlstd{(}\hlstr{"row"}\hlstd{)} \hlopt{%>%}
+    \hlkwd{adorn_pct_formatting}\hlstd{(}\hlkwc{digits} \hlstd{=} \hlnum{2}\hlstd{)}
+\hlstd{c3}
+\end{alltt}
+\begin{verbatim}
+##             country No primary Compl Primary Compl Sec/HS Compl Uni/Coll
+##               China     42.27%        20.18%       33.45%          4.11%
+##               Ghana     31.58%        18.42%       36.84%         13.16%
+##               India     52.11%        13.98%       24.76%          9.15%
+##              Mexico     44.97%        28.57%       11.38%         15.08%
+##  Russian Federation      3.27%         6.48%       70.89%         19.36%
+##        South Africa     39.50%        22.98%       27.93%          9.59%
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
 
-<<L1tables2, warning=warn, eval=EVAL  >>=
-bySex <- group_by(bP,country,residence, sex) %>% 
-       summarise( meanDisability = mean(disability), sdDisability=sd(disability))
-# kable(bySex)
-@
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{bySex} \hlkwb{<-} \hlkwd{group_by}\hlstd{(bP,country,residence, sex)} \hlopt{%>%}
+       \hlkwd{summarise}\hlstd{(} \hlkwc{meanDisability} \hlstd{=} \hlkwd{mean}\hlstd{(disability),} \hlkwc{sdDisability}\hlstd{=}\hlkwd{sd}\hlstd{(disability))}
+\hlcom{# kable(bySex)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 
 \section{Visualization}
 
@@ -292,26 +525,38 @@ Visualization in the tidyverse uses a package developed by Hadley Wickham called
 Here are a few examples using the backPain data. (We'll take a closer look at this code later.)
 
 
-<<L1_FacetedHistograms, warning = warn, eval=EVAL  >>=
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{pp1} \hlkwb{<-} \hlkwd{ggplot}\hlstd{(bP,} \hlkwd{aes}\hlstd{(}\hlkwc{x}\hlstd{=bmi,} \hlkwc{fill}\hlstd{=agegr))} \hlopt{+}
+  \hlkwd{geom_histogram}\hlstd{(}\hlkwc{binwidth} \hlstd{=} \hlnum{2.5}\hlstd{)} \hlopt{+}
+  \hlkwd{facet_grid}\hlstd{(country} \hlopt{~} \hlstd{sex,}\hlkwc{scales}\hlstd{=}\hlstr{"free_y"}\hlstd{)}
+\hlstd{pp1}
+\end{alltt}
+\end{kframe}
+\includegraphics[width=\maxwidth]{figure/L1_FacetedHistograms-1} 
 
-pp1 <- ggplot(bP, aes(x=bmi, fill=agegr)) +
-  geom_histogram(binwidth = 2.5) +
-  facet_grid(country ~ sex,scales="free_y")
-pp1
-@
+\end{knitrout}
 
 Note the 'free' y-axis. Its not obvious at first glance that China has much more data than South Africa.  An annotation on the plot of the total numbers would draw immediate attention to this. Note too that Ghana's data set (after removal of the NA's) is \textsl{very} small. For some unexplained reason, the Ghana data has very few height measurements even though these are necessary for comutation of BMI.
 Let's have a look at the data for disability vs age.
 
-<<L1ScatterFacet, warning=warn, eval=EVAL  >>=
- bP <- bP %>% mutate(bmi4 = factor(bmi4, levels = 
-                                     c("Underweight","Normal", "Pre-Obese", "Obese")))
-p <- ggplot(bP, aes(x = age,  y = disability ,color = residence, shape = sex)) +
-  geom_point() +
-  facet_grid(country~bmi4)
-p
-@
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+ \hlstd{bP} \hlkwb{<-} \hlstd{bP} \hlopt{%>%} \hlkwd{mutate}\hlstd{(}\hlkwc{bmi4} \hlstd{=} \hlkwd{factor}\hlstd{(bmi4,} \hlkwc{levels} \hlstd{=}
+                                     \hlkwd{c}\hlstd{(}\hlstr{"Underweight"}\hlstd{,}\hlstr{"Normal"}\hlstd{,} \hlstr{"Pre-Obese"}\hlstd{,} \hlstr{"Obese"}\hlstd{)))}
+\hlstd{p} \hlkwb{<-} \hlkwd{ggplot}\hlstd{(bP,} \hlkwd{aes}\hlstd{(}\hlkwc{x} \hlstd{= age,}  \hlkwc{y} \hlstd{= disability ,}\hlkwc{color} \hlstd{= residence,} \hlkwc{shape} \hlstd{= sex))} \hlopt{+}
+  \hlkwd{geom_point}\hlstd{()} \hlopt{+}
+  \hlkwd{facet_grid}\hlstd{(country}\hlopt{~}\hlstd{bmi4)}
+\hlstd{p}
+\end{alltt}
+\end{kframe}
+\includegraphics[width=\maxwidth]{figure/L1ScatterFacet-1} 
+
+\end{knitrout}
 
 
 
 %\printindex
+\end{document}

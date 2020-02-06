@@ -99,8 +99,7 @@ bP %>% select(bmi, age, disability) %>%
   cor(use = "complete.obs")   #removes NA's where necessary
 @
 
-We might also be interested in the correlation test statistics.  These are determined by the \texttt{stats::cor.test()}
-function.  \texttt{stats::cor.test()} requires specification of two vectors, and a dataframe cannot be specified, so...
+We might be interested in correlation test statistics. These are determined by the \texttt{stats::cor.test()} function.  \texttt{stats::cor.test()} requires specification of two vectors, and a dataframe cannot be specified, so...
 
 <<L7corTest1, warning=warn, eval = EVAL >>=
   cor.test(bP$age, bP$disability, use = "complete.obs") 

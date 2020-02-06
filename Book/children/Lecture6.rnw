@@ -223,7 +223,7 @@ head(SAGE_PPP,40)
 names(SAGE_PPP)[3] <- "PPP"
 names(SAGE_MPH)[3] <- "MPH"
 names(SAGE_HPG)[3] <- "HPG"
-SAGE_HPG <- SAGE_HPG %>% mutate(HPG = HPG * 10.)  # NB (Easier to see in the plot)  !!!!!!
+SAGE_HPG <- SAGE_HPG %>% mutate(HPG = HPG * 10.)  # NB (Easier to see in the plot)  !!!!
 sum(is.na(SAGE_MPH))
 sum(is.na(SAGE_HPG))
 
@@ -255,10 +255,11 @@ dd <- rep(0,6)      # create a 6 element vector, each element is 0
 #      data by the max of the country's per capita income data)
 
 for (i in levels(df$country)){        # loop through the levels of country
-  jj <- jj + 1                        # jj will take values 1-6 as we cycle through the loop
+  jj <- jj + 1                        # jj will take values 1-6 through the loop
   dd[jj] <- max(df$PPP[df$country == i], na.rm=T)   # Find the maximum PPP for country i
                                                     # Store in vector dd
-  df$PPP[df$country == i] <- df$PPP[df$country==i]/dd[jj]*100. # divide PPP for country i                                                            # by the max PPP for country i
+  df$PPP[df$country == i] <- df$PPP[df$country==i]/dd[jj]*100. # divide PPP for country i   
+                                                # by the max PPP for country i
 }
 df <- select(df, -iso2c)    # Cleaning up - don't need this
 @
@@ -362,10 +363,12 @@ A further search on  leads to an \href{http://stackoverflow.com/questions/754969
 library(ggpmisc)
 png("plot8.png", width = 2480, height = 1240, res = 120)
 my.formula <- y ~ x
-p <- ggplot(data = bP, aes(x = bmi, y = wHR, shape = residence, colour = agegr, group = 1)) +
+p <- ggplot(data = bP, aes(x = bmi, y = wHR, shape = residence, 
+                           colour = agegr, group = 1)) +
   geom_smooth(method = "lm", se=FALSE) + ylim(0,1.5) +
   stat_poly_eq(formula = my.formula, 
-               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~",x=30, y=1.4), y=1.4), 
+               aes(label = paste(..eq.label.., ..rr.label.., 
+                                 sep = "~~~",x=30, y=1.4), y=1.4), 
                parse = TRUE) +         
   geom_point()+ facet_grid(country~sex)
 p
